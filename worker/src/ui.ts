@@ -406,6 +406,25 @@ export function renderLandingPage(origin: string): string {
       margin: 0;
     }
 
+    .lineage-item .code-block {
+      margin: 0.75rem 0 0.25rem;
+    }
+
+    .lineage-item .code-block pre {
+      padding: 0.85rem 1rem;
+      font-size: 0.78rem;
+      line-height: 1.55;
+    }
+
+    .code-output-divider {
+      display: block;
+      color: #64748b;
+      border-top: 1px dashed #334155;
+      margin: 0.55rem 0 0.45rem;
+      padding-top: 0.45rem;
+      user-select: none;
+    }
+
     /* Callout Note */
     .callout {
       background: var(--surface);
@@ -825,6 +844,26 @@ export function renderLandingPage(origin: string): string {
               &#128196; View Attached owners-manual.pdf (CID: bafkreih2dwc...) &nearr;
             </a>
           </div>
+          <div class="code-block">
+            <div class="code-header">
+              <span>Block #0 · Initialize genesis block &amp; output</span>
+              <button type="button" class="copy-btn" onclick="copySnippet(this)">Copy Command</button>
+            </div>
+            <pre data-copy="./bin/pkaput commit-step \\
+  --chain examples/esphome-s31/packablock.yaml \\
+  --pkg &quot;itead/ewelink-oem-firmware&quot; --from &quot;none&quot; --to &quot;2.6.1&quot; \\
+  --commit &quot;oem-factory-261&quot; \\
+  --reason &quot;Factory proprietary eWeLink v2.6.1 firmware baseline&quot;">$ ./bin/pkaput commit-step \\
+    --chain examples/esphome-s31/packablock.yaml \\
+    --pkg "itead/ewelink-oem-firmware" --from "none" --to "2.6.1" \\
+    --commit "oem-factory-261" \\
+    --reason "Factory proprietary eWeLink v2.6.1 firmware baseline"<span class="code-output-divider"># Output (appends Genesis Block #0 to packablock.yaml):</span>🔗 [pkaput commit-step] Continuous Attestation Block #0 recorded in examples/esphome-s31/packablock.yaml
+   ├─ Transition:       itead/ewelink-oem-firmware (none -> 2.6.1) [Factory proprietary eWeLink v2.6.1 firmware baseline]
+   ├─ Attached Asset:   owners-manual.pdf (Leaf CID: bafkreih2dwc3wrfoli4fvnldafjaoj2zkdphnmdapzff3l52lp6nkvwpqu)
+   ├─ Parent Block CID: bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa (genesis)
+   ├─ Block CID:        bafkreibuwc4ncjh2qylss7k4jtcblrwtorgewtbx7ofyx37ylx2ynx3ney
+   └─ Meta Hash:        eb629fb292c853f73c8c6f3095b4988ca7d10cec20b751af920f63cb5037fc22</pre>
+          </div>
         </div>
 
         <div class="lineage-item">
@@ -843,6 +882,26 @@ export function renderLandingPage(origin: string): string {
               &#128279; Official ESPHome Sonoff S31 Device Page &nearr;
             </a>
           </div>
+          <div class="code-block">
+            <div class="code-header">
+              <span>Block #1 · Append open-source ESPHome flash &amp; output</span>
+              <button type="button" class="copy-btn" onclick="copySnippet(this)">Copy Command</button>
+            </div>
+            <pre data-copy="./bin/pkaput commit-step \\
+  --chain examples/esphome-s31/packablock.yaml \\
+  --pkg &quot;esphome/esphome&quot; --from &quot;itead-oem-2.6.1&quot; --to &quot;2026.7.0&quot; \\
+  --commit &quot;7a1c09e&quot; \\
+  --reason &quot;Flashed from proprietary eWeLink v2.6.1 to open-source ESPHome 2026.7.0 (3 versions back)&quot;">$ ./bin/pkaput commit-step \\
+    --chain examples/esphome-s31/packablock.yaml \\
+    --pkg "esphome/esphome" --from "itead-oem-2.6.1" --to "2026.7.0" \\
+    --commit "7a1c09e" \\
+    --reason "Flashed from proprietary eWeLink v2.6.1 to open-source ESPHome 2026.7.0 (3 versions back)"<span class="code-output-divider"># Output (links prev_meta_hash eb629fb292c8... -> signs Block #1):</span>🔗 [pkaput commit-step] Continuous Attestation Block #1 recorded in examples/esphome-s31/packablock.yaml
+   ├─ Transition:       esphome/esphome (itead-oem-2.6.1 -> 2026.7.0) [itead/ewelink-oem-firmware removed]
+   ├─ Attached Asset:   sonoff-s31-esphome.yaml (Leaf CID: bafkreibbzyj5gy3yrcuxyzhrs3yiv6352j4oali53dqstiij5x6e3c3vga)
+   ├─ Parent Block CID: bafkreibuwc4ncjh2qylss7k4jtcblrwtorgewtbx7ofyx37ylx2ynx3ney
+   ├─ Block CID:        bafkreigkggyjgb2rm6pl3a6pds5b2w6pump3jheinyzjgrkdv57fyhc2iy
+   └─ Meta Hash:        30c7e98ff51f6a4b4b4b13dea5c4f5d43892e87306d6de9b83d0f99ca0b86ea6</pre>
+          </div>
         </div>
 
         <div class="lineage-item">
@@ -850,9 +909,29 @@ export function renderLandingPage(origin: string): string {
             <span class="lineage-block-title">Block #2 · Home Assistant ESPHome OTA #1 &rarr; <code class="inline">2026.8.2</code></span>
             <span class="lineage-block-meta">2026-08-19 · commit b34e812</span>
           </div>
-          <p class="lineage-desc" style="margin-bottom: 0;">
+          <p class="lineage-desc">
             First wireless OTA update via Home Assistant ESPHome Add-on. Upgrades <code class="inline">esphome/esphome</code> (<code class="inline">2026.7.0 &rarr; 2026.8.2</code>) and <code class="inline">lwip/lwip-esp8266</code> (<code class="inline">2.1.2 &rarr; 2.1.3-patch1</code>) for Wi-Fi beacon stability.
           </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span>Block #2 · Append Home Assistant OTA #1 &amp; output</span>
+              <button type="button" class="copy-btn" onclick="copySnippet(this)">Copy Command</button>
+            </div>
+            <pre data-copy="./bin/pkaput commit-step \\
+  --chain examples/esphome-s31/packablock.yaml \\
+  --pkg &quot;esphome/esphome&quot; --from &quot;2026.7.0&quot; --to &quot;2026.8.2&quot; \\
+  --commit &quot;b34e812&quot; \\
+  --reason &quot;Home Assistant OTA #1: Upgrade ESPHome 2026.7.0 -> 2026.8.2 and patch lwIP Wi-Fi beacon stability&quot;">$ ./bin/pkaput commit-step \\
+    --chain examples/esphome-s31/packablock.yaml \\
+    --pkg "esphome/esphome" --from "2026.7.0" --to "2026.8.2" \\
+    --commit "b34e812" \\
+    --reason "Home Assistant OTA #1: Upgrade ESPHome 2026.7.0 -> 2026.8.2 and patch lwIP Wi-Fi beacon stability"<span class="code-output-divider"># Output (links prev_meta_hash 30c7e98ff51f... -> signs Block #2):</span>🔗 [pkaput commit-step] Continuous Attestation Block #2 recorded in examples/esphome-s31/packablock.yaml
+   ├─ Transition:       esphome/esphome (2026.7.0 -> 2026.8.2), lwip/lwip-esp8266 (2.1.2 -> 2.1.3-patch1)
+   ├─ Intermediate OCI: sha256:5174e2d17536bd85dd8206a288c8248604abd7747520f2af0736274789f82c0d
+   ├─ Parent Block CID: bafkreigkggyjgb2rm6pl3a6pds5b2w6pump3jheinyzjgrkdv57fyhc2iy
+   ├─ Block CID:        bafkreigfwimvkli2nhbfmjsbicwmrbwcxf5262nfuo443k2tgvhbbgvh5y
+   └─ Meta Hash:        b25c361d4a9412c30532209ba2bd3d1b90419b556f7c0925b5f20c377c9354c0</pre>
+          </div>
         </div>
 
         <div class="lineage-item">
@@ -860,9 +939,29 @@ export function renderLandingPage(origin: string): string {
             <span class="lineage-block-title">Block #3 · Home Assistant ESPHome OTA #2 &rarr; <code class="inline">2026.9.1</code> (Fixes <code class="inline">CVE-2026-4108</code>)</span>
             <span class="lineage-block-meta">2026-09-23 · commit e904d5a</span>
           </div>
-          <p class="lineage-desc" style="margin-bottom: 0;">
+          <p class="lineage-desc">
             Second wireless OTA update. Upgrades <code class="inline">esphome/ESPAsyncWebServer</code> (<code class="inline">3.1.0 &rarr; 3.3.2</code>) to remediate <code class="inline">CVE-2026-4108</code> and bumps <code class="inline">platformio/espressif8266</code> to <code class="inline">4.2.1</code>.
           </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span>Block #3 · Append Home Assistant OTA #2 (CVE-2026-4108 fix) &amp; output</span>
+              <button type="button" class="copy-btn" onclick="copySnippet(this)">Copy Command</button>
+            </div>
+            <pre data-copy="./bin/pkaput commit-step \\
+  --chain examples/esphome-s31/packablock.yaml \\
+  --pkg &quot;esphome/ESPAsyncWebServer&quot; --from &quot;3.1.0&quot; --to &quot;3.3.2&quot; \\
+  --commit &quot;e904d5a&quot; \\
+  --reason &quot;Home Assistant OTA #2: Upgrade ESPHome 2026.8.2 -> 2026.9.1 and remediate ESPAsyncWebServer CVE-2026-4108&quot;">$ ./bin/pkaput commit-step \\
+    --chain examples/esphome-s31/packablock.yaml \\
+    --pkg "esphome/ESPAsyncWebServer" --from "3.1.0" --to "3.3.2" \\
+    --commit "e904d5a" \\
+    --reason "Home Assistant OTA #2: Upgrade ESPHome 2026.8.2 -> 2026.9.1 and remediate ESPAsyncWebServer CVE-2026-4108"<span class="code-output-divider"># Output (links prev_meta_hash b25c361d4a94... -> signs Block #3):</span>🔗 [pkaput commit-step] Continuous Attestation Block #3 recorded in examples/esphome-s31/packablock.yaml
+   ├─ Transition:       esphome/esphome (2026.8.2 -> 2026.9.1), esphome/ESPAsyncWebServer (3.1.0 -> 3.3.2) [CVE-2026-4108]
+   ├─ Intermediate OCI: sha256:57b7e8d00e9df0805e29f2832d59f00abe06232f06120d880c5869c6fdbb7b10
+   ├─ Parent Block CID: bafkreigfwimvkli2nhbfmjsbicwmrbwcxf5262nfuo443k2tgvhbbgvh5y
+   ├─ Block CID:        bafkreicullikawoxvtd4owpstl24hor2x4vmva6aqxhonlx3awcu4sat5i
+   └─ Meta Hash:        51bc724abd889d44532573d4889ea81f0b8cb7bd9f32598da8275cf523edf498</pre>
+          </div>
         </div>
 
         <div class="lineage-item">
@@ -870,9 +969,29 @@ export function renderLandingPage(origin: string): string {
             <span class="lineage-block-title">Block #4 · Home Assistant ESPHome OTA #3 &rarr; <code class="inline">2026.10.3</code> (Present Day)</span>
             <span class="lineage-block-meta">2026-11-04 · commit f4129c8</span>
           </div>
-          <p class="lineage-desc" style="margin-bottom: 0;">
+          <p class="lineage-desc">
             Third wireless OTA update bringing the plug to present-day <code class="inline">2026.10.3</code> and upgrading <code class="inline">esphome/noise-c</code> (<code class="inline">0.1.9 &rarr; 0.1.10</code>) for Noise API encryption key rotation. Seals terminal <code class="inline">meta_hash: 72da938cfb...</code>.
           </p>
+          <div class="code-block">
+            <div class="code-header">
+              <span>Block #4 · Append Home Assistant OTA #3 (Present Day) &amp; output</span>
+              <button type="button" class="copy-btn" onclick="copySnippet(this)">Copy Command</button>
+            </div>
+            <pre data-copy="./bin/pkaput commit-step \\
+  --chain examples/esphome-s31/packablock.yaml \\
+  --pkg &quot;esphome/esphome&quot; --from &quot;2026.9.1&quot; --to &quot;2026.10.3&quot; \\
+  --commit &quot;f4129c8&quot; \\
+  --reason &quot;Home Assistant OTA #3 (Present Day): Upgrade ESPHome 2026.9.1 -> 2026.10.3 with Noise API encryption rotation&quot;">$ ./bin/pkaput commit-step \\
+    --chain examples/esphome-s31/packablock.yaml \\
+    --pkg "esphome/esphome" --from "2026.9.1" --to "2026.10.3" \\
+    --commit "f4129c8" \\
+    --reason "Home Assistant OTA #3 (Present Day): Upgrade ESPHome 2026.9.1 -> 2026.10.3 with Noise API encryption rotation"<span class="code-output-divider"># Output (links prev_meta_hash 51bc724abd88... -> seals terminal Block #4):</span>🔗 [pkaput commit-step] Continuous Attestation Block #4 recorded in examples/esphome-s31/packablock.yaml
+   ├─ Transition:       esphome/esphome (2026.9.1 -> 2026.10.3), esphome/noise-c (0.1.9 -> 0.1.10)
+   ├─ Intermediate OCI: sha256:db619235295dab6a8620d24e88468ea8175a439ddff64c5b4996e9be25226adf
+   ├─ Parent Block CID: bafkreicullikawoxvtd4owpstl24hor2x4vmva6aqxhonlx3awcu4sat5i
+   ├─ Block CID:        bafkreif63wg55gogn6shwstjha6xxvhp2fwzpinddq7edosjpddn7rdmci
+   └─ Meta Hash:        72da938cfb25373a289f4f9c67d868d6224d4602debd509ada66da087c34daa2</pre>
+          </div>
         </div>
       </div>
 
@@ -1182,7 +1301,8 @@ go build -o bin/pkaput ./cmd/pkaput
 
     function copySnippet(btn) {
       const pre = btn.closest('.code-block').querySelector('pre');
-      navigator.clipboard.writeText(pre.textContent || '').then(() => {
+      const text = pre.getAttribute('data-copy') || pre.textContent || '';
+      navigator.clipboard.writeText(text).then(() => {
         const prev = btn.textContent;
         btn.textContent = 'Copied!';
         setTimeout(() => { btn.textContent = prev; }, 1400);
