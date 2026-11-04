@@ -133,10 +133,15 @@ go build -o bin/pkaput.exe ./cmd/pkaput
 go test -v ./...
 ```
 
-### Execute the 4-Stage Producer-to-Consumer Workflow (`pkablk` $\rightarrow$ `pkaput`)
+### Execute the 4-Stage Producer-to-Consumer Workflow (`pkablk` $\rightarrow$ `syft` $\rightarrow$ `pkaput`)
 ```powershell
-# 1. Producer: Verify packablock.yaml chain & squash intermediate layers into CARv1 + IPFS bundle
+# 1. Producer: Verify packablock.yaml chain, run Anchore Syft to generate sbom.cdx.json, and squash layers into CARv1
+#    (Uses 'syft' on PATH if installed in CI/CD, or auto-bootstraps official Anchore Syft v1.20.0 into ./bin/ on first run)
 ./bin/pkaput.exe squash-release --layers 3 --output-tag "secure-lib:v1.0.0" --storage local
+
+#    Or bring your own Syft CycloneDX output from an upstream CI step:
+#    syft scan dir:. -o cyclonedx-json=bin/raw-syft.cdx.json
+#    ./bin/pkaput.exe squash-release --layers 3 --output-tag "secure-lib:v1.0.0" --sbom-in bin/raw-syft.cdx.json --storage local
 
 # 2. Producer: Publish RFC 4648 Base32 DNSLink TXT pointer to CoreDNS (or --provider cloudflare)
 ./bin/pkaput.exe publish-dns --domain "layers.example.internal" --provider coredns

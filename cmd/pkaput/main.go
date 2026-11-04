@@ -98,7 +98,9 @@ func runSquashRelease(args []string) error {
 	ipfsAPI := fs.String("ipfs-api", "http://127.0.0.1:5002", "Local Kubo IPFS RPC API endpoint")
 	workerURL := fs.String("worker-url", "", "Cloudflare R2 Trustless Gateway Worker URL (or PKAPUT_WORKER_URL)")
 	registryURL := fs.String("registry", "http://127.0.0.1:5001", "Local private OCI registry endpoint")
-	attachFile := fs.String("attach", "", "Optional extra artifact file (e.g. compliance.pdf) to include in the UnixFS bundle")
+	attachFile := fs.String("attach", "", "Optional extra artifact file(s) (comma-separated, e.g. owners-manual.pdf,sonoff-s31-esphome.yaml)")
+	sbomIn := fs.String("sbom-in", "", "Optional path to an existing CycloneDX JSON SBOM produced by 'syft scan -o cyclonedx-json'")
+	sbomTool := fs.String("sbom-tool", "auto", "SBOM generator mode: auto (use/bootstrap Anchore Syft, fallback to builtin), syft, or builtin")
 	_ = fs.Parse(args)
 
 	km, err := attestation.LoadKeyMaterial(*keyFile)
@@ -117,16 +119,18 @@ func runSquashRelease(args []string) error {
 	latestPackages := chain.ReconstructLatestPackages(report.Blocks)
 
 	// 1. Compress intermediate layer tarballs into a single flattened layer
+	_ = os.RemoveAll(layersStagingDir)
 	flattenedLayer, intermediateDigests, err := oci.SquashLayers(layersStagingDir, *layersCount, *outputTag, latestPackages)
 	if err != nil {
 		return fmt.Errorf("squashing %d layers: %w", *layersCount, err)
 	}
 
-	// 2. Generate consolidated CycloneDX SBOM for the squashed filesystem
-	sbomBytes, err := oci.GenerateCycloneDXSBOM(*outputTag, flattenedLayer.Digest, latestPackages)
+	// 2. Generate consolidated CycloneDX SBOM via Anchore Syft (or ingest --sbom-in)
+	syftRes, err := oci.GenerateCycloneDXWithSyft(*outputTag, flattenedLayer.Digest, flattenedLayer.TarGzPath, latestPackages, *sbomIn, *sbomTool)
 	if err != nil {
 		return fmt.Errorf("generating CycloneDX SBOM: %w", err)
 	}
+	sbomBytes := syftRes.SBOMBytes
 
 	extraArtifacts := make(map[string][]byte)
 	if *attachFile != "" {
@@ -219,6 +223,7 @@ func runSquashRelease(args []string) error {
 		fmt.Printf("   ├─ Private Registry: %s (local staging ready)\n", flattenedLayer.TarGzPath)
 	}
 	fmt.Printf("   ├─ Precursor Blocks: %d blocks linked from %s (terminal meta_hash: %s)\n", len(report.Blocks), *chainFile, report.MetaHash)
+	fmt.Printf("   ├─ CycloneDX SBOM:   %s (Anchore Syft v%s)\n", syftRes.CommandLine, syftRes.SyftVersion)
 	fmt.Printf("   ├─ CARv1 Archive:    %s (CAR root: %s)\n", carPath, carRootCID)
 	if len(extraArtifacts) > 0 {
 		for name := range extraArtifacts {

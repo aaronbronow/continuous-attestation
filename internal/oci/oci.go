@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 )
@@ -254,62 +253,9 @@ func uploadBlob(client *http.Client, registryHost, repo, digest string, data []b
 	return nil
 }
 
-// GenerateCycloneDXSBOM builds a CycloneDX v1.5 JSON SBOM for the squashed layer.
+// GenerateCycloneDXSBOM builds a deterministic CycloneDX v1.5 JSON SBOM for the squashed layer.
 func GenerateCycloneDXSBOM(outputTag, flattenedDigest string, packages map[string]string) ([]byte, error) {
-	type licenseEntry struct {
-		License map[string]string `json:"license"`
-	}
-	type component struct {
-		Type     string         `json:"type"`
-		Name     string         `json:"name"`
-		Version  string         `json:"version"`
-		PURL     string         `json:"purl"`
-		Licenses []licenseEntry `json:"licenses"`
-	}
-
-	names := make([]string, 0, len(packages))
-	for name := range packages {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-
-	var comps []component
-	for _, name := range names {
-		ver := packages[name]
-		cleanVer := strings.TrimPrefix(ver, "v")
-		eco := "golang"
-		if strings.HasPrefix(name, "esphome/") || strings.HasPrefix(name, "platformio/") || strings.HasPrefix(name, "lwip/") {
-			eco = "generic"
-		}
-		comps = append(comps, component{
-			Type:    "library",
-			Name:    name,
-			Version: ver,
-			PURL:    fmt.Sprintf("pkg:%s/%s@v%s", eco, name, cleanVer),
-			Licenses: []licenseEntry{
-				{License: map[string]string{"id": "MIT"}},
-			},
-		})
-	}
-
-	sbom := map[string]interface{}{
-		"bomFormat":    "CycloneDX",
-		"specVersion":  "1.5",
-		"serialNumber": "urn:uuid:7b89c4f1-903a-41b2-a8d0-" + strings.TrimPrefix(flattenedDigest, "sha256:")[:12],
-		"version":      1,
-		"metadata": map[string]interface{}{
-			"timestamp": time.Now().UTC().Format(time.RFC3339),
-			"component": map[string]interface{}{
-				"type":    "container",
-				"name":    outputTag,
-				"version": flattenedDigest,
-			},
-		},
-		"components":      comps,
-		"vulnerabilities": []interface{}{},
-	}
-
-	return json.MarshalIndent(sbom, "", "  ")
+	return canonicalizeSyftCycloneDX([]byte(`{}`), outputTag, flattenedDigest, packages, DefaultSyftVersion)
 }
 
 func buildDeterministicTarGz(files map[string][]byte) ([]byte, string, error) {
