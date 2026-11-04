@@ -1,0 +1,17 @@
+name = "continuous-attestation-demo"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+[observability]
+enabled = true
+
+[observability.traces]
+enabled = true
+
+# Optional: Uncomment when binding a dedicated Cloudflare R2 bucket in your account
+# [[r2_buckets]]
+# binding = "ATTESTATION_BUCKET"
+# bucket_name = "packablock-attestations"
+
+[vars]
+PUBLIC_GATEWAY_ORIGIN = ""

@@ -1,0 +1,43 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-11-03T22:00:00Z",
+    "component": {
+      "type": "container",
+      "name": "secure-lib",
+      "version": "v1.0.0"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "github.com/gin-gonic/gin",
+      "version": "v1.10.0",
+      "purl": "pkg:golang/github.com/gin-gonic/gin@v1.10.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "golang.org/x/crypto",
+      "version": "v0.28.0",
+      "purl": "pkg:golang/golang.org/x/crypto@v0.28.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ]
+    }
+  ],
+  "vulnerabilities": []
+}

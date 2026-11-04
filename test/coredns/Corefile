@@ -1,0 +1,11 @@
+layers.example.internal:53 {
+    reload 2s
+    file /etc/coredns/db.layers.example.internal
+    log
+    errors
+}
+
+.:53 {
+    errors
+    log
+}

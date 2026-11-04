@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://docs.packablock.com/schemas/squash-predicate.v1.json",
+  "title": "Packablock Squashed Release in-toto Statement & DSSE Predicate Schema v1",
+  "type": "object",
+  "required": [
+    "_type",
+    "subject",
+    "predicateType",
+    "predicate"
+  ],
+  "properties": {
+    "_type": {
+      "type": "string",
+      "const": "https://in-toto.io/Statement/v1"
+    },
+    "subject": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "digest"],
+        "properties": {
+          "name": { "type": "string" },
+          "digest": {
+            "type": "object",
+            "required": ["sha256"],
+            "properties": {
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "predicateType": {
+      "type": "string",
+      "const": "https://docs.packablock.com/spec/squash-predicate/v1"
+    },
+    "predicate": {
+      "type": "object",
+      "required": [
+        "outputTag",
+        "flattenedLayerDigest",
+        "issuerDid",
+        "timestamp",
+        "squashedLineage",
+        "verificationSummary",
+        "verifiableCredential"
+      ],
+      "properties": {
+        "outputTag": { "type": "string" },
+        "flattenedLayerDigest": { "type": "string" },
+        "issuerDid": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "squashedLineage": {
+          "type": "object",
+          "required": [
+            "layerCount",
+            "terminalMetaHash",
+            "precursors"
+          ],
+          "properties": {
+            "layerCount": { "type": "integer", "minimum": 1 },
+            "terminalMetaHash": { "type": "string" },
+            "precursors": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "blockIndex",
+                  "blockCid",
+                  "parentBlockCid",
+                  "metaHash",
+                  "dataHash",
+                  "layerDigest",
+                  "timestamp"
+                ],
+                "properties": {
+                  "blockIndex": { "type": "integer" },
+                  "blockCid": { "type": "string" },
+                  "parentBlockCid": { "type": "string" },
+                  "metaHash": { "type": "string" },
+                  "dataHash": { "type": "string" },
+                  "layerDigest": { "type": "string" },
+                  "timestamp": { "type": "string" },
+                  "actor": { "type": "string" },
+                  "commit": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "verificationSummary": {
+          "type": "object",
+          "required": [
+            "verifier",
+            "timeVerified",
+            "resourceUri",
+            "policy",
+            "inputAttestations",
+            "verificationResult",
+            "verifiedLevels"
+          ]
+        },
+        "verifiableCredential": {
+          "type": "object",
+          "required": [
+            "@context",
+            "type",
+            "issuer",
+            "issuanceDate",
+            "credentialSubject",
+            "proof"
+          ]
+        }
+      }
+    }
+  }
+}

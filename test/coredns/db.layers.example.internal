@@ -1,0 +1,13 @@
+$ORIGIN layers.example.internal.
+$TTL 60
+@   IN  SOA ns1.layers.example.internal. admin.layers.example.internal. (
+        2026110448 ; serial
+        3600       ; refresh
+        1800       ; retry
+        604800     ; expire
+        60         ; minimum TTL
+)
+    IN  NS  ns1.layers.example.internal.
+ns1 IN  A   127.0.0.1
+_dnslink.refazt36dtmazmsyoyjnlbqxuu5rzli5oja4lvdqpllhxsvd6qca IN TXT "dnslink=/ipfs/bafybeiafkrgqxszevr72nhulphniioylwbfplyo2gfh6is6ki7dm33onpe"
+_dnslink.v34jlh3oh3hzeaplen6ae547fm7turtw3nrkgv2rqhberzngl4va IN TXT "dnslink=/ipfs/bafybeide5ligei4pht5cl2t4zsqf2bul2edlwhvpmc4uacsfupxod7uute"

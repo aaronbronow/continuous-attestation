@@ -1,0 +1,7 @@
+bin/
+dist/
+*.car
+node_modules/
+.wrangler/
+.dev.vars
+.env

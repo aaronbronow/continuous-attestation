@@ -1,0 +1,91 @@
+name: Continuous Attestation & pkaput Zero-Trust Demo
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  continuous-attestation-pipeline:
+    name: Build, Squash, Put & Zero-Trust Gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache: true
+
+      - name: Run Go Unit & Integration Tests
+        run: go test -v ./...
+
+      - name: Build pkaput CLI
+        run: go build -o bin/pkaput ./cmd/pkaput
+
+      - name: Step 1 — Verify Packablock Continuous Attestation Chain
+        run: ./bin/pkaput check packablock.yaml
+
+      - name: Step 2 — Squash OCI Layers & Put CARv1 Bundle to Content-Addressed Storage
+        run: ./bin/pkaput squash-release --layers 3 --output-tag "secure-lib:v1.0.0" --storage local
+
+      - name: Step 3 — Publish RFC 4648 Base32 DNSLink Record
+        run: ./bin/pkaput publish-dns --domain "layers.example.internal" --provider coredns
+
+      - name: Step 4 — Execute Consumer Zero-Trust Pre-Flight Gate
+        run: ./bin/pkaput preflight-gate --file bin/layers/flattened.tar.gz --domain "layers.example.internal"
+
+      - name: Step 5 — Verify Gate 3 Rejects Simulated Critical CVE
+        run: |
+          if ./bin/pkaput preflight-gate --file bin/layers/flattened.tar.gz --domain "layers.example.internal" --simulate-cve; then
+            echo "Expected preflight-gate to reject simulated CVE!"
+            exit 1
+          else
+            echo "Verified: Gate 3 properly rejected simulated CVE-2026-9999"
+          fi
+
+      - name: Upload CARv1 Release Bundle & Attestation Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: continuous-attestation-release-bundle
+          path: |
+            bin/release-bundle.car
+            bin/layers/flattened.tar.gz
+            bin/ipfs-cache/
+            test/coredns/db.layers.example.internal
+
+  deploy-pages:
+    name: Publish Interactive Verifier & Static IPFS Gateway to GitHub Pages
+    needs: continuous-attestation-pipeline
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Static Site + Content-Addressed IPFS Gateway Tree
+        run: node scripts/build-static-demo.mjs
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

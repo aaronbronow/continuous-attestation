@@ -1,0 +1,26 @@
+services:
+  # 1. Local Private Registry (Simulates Project A private registry)
+  registry:
+    image: registry:2
+    ports:
+      - "5001:5000"
+
+  # 2. Local IPFS Node (Simulates decentralized persistence)
+  ipfs:
+    image: ipfs/kubo:latest
+    ports:
+      - "4001:4001"
+      - "5002:5001" # API
+      - "8080:8080" # Gateway
+    environment:
+      - IPFS_PATH=/data/ipfs
+
+  # 3. Local CoreDNS (Simulates public/untrusted DNSLink nameserver)
+  coredns:
+    image: coredns/coredns:latest
+    command: -conf /etc/coredns/Corefile
+    volumes:
+      - ./test/coredns:/etc/coredns
+    ports:
+      - "1053:53/udp"
+      - "1053:53/tcp"

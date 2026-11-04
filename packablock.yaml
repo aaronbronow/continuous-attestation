@@ -1,0 +1,32 @@
+lockfiles:
+  package-lock.json:
+    packages:
+      - github.com/gin-gonic/gin: 1.9.1
+      - golang.org/x/crypto: 0.28.0
+      - gopkg.in/yaml.v3: 3.0.1
+---
+$yaml-chain-meta:
+  version: 1.0.0
+  block_index: 0
+  timestamp: 2026-11-04T07:27:19.413Z
+  hashing_strategy: raw
+  data_hash: 23f4b53598bed5c022d74a8bd94fd2f111b91deb2a290664a0a93d6872ceb426
+  prev_meta_hash: "0000000000000000000000000000000000000000000000000000000000000000"
+  meta_hash: 7bc34b2058c4c68d61497e3f240257eaf689ef81eab8c44426613478899944b1
+---
+lockfiles:
+  package-lock.json:
+    packages:
+      - github.com/gin-gonic/gin:
+          - old: 1.9.1
+          - new: 1.10.0
+          - loc: 12,9
+---
+$yaml-chain-meta:
+  version: 1.0.0
+  block_index: 1
+  timestamp: 2026-11-04T07:27:19.765Z
+  hashing_strategy: raw
+  data_hash: 2b13b18bf6385ff9817a20d52c75ef2761c97ea424b48f2d2c1b102f4b428ca0
+  prev_meta_hash: 7bc34b2058c4c68d61497e3f240257eaf689ef81eab8c44426613478899944b1
+  meta_hash: 8fec19173e2dd9b321bd9f45c3ac20c48875f9b69abcb640fd5136e18d9e322e
