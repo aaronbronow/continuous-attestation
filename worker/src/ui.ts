@@ -774,7 +774,7 @@ export function renderLandingPage(origin: string): string {
           <p>
             Imagine you buy an <strong>ITEAD Sonoff S31</strong> energy-monitoring smart plug (<code class="inline">ESP8266EX</code> + <code class="inline">CSE7766</code>).
             Out of the box, it runs closed-source factory firmware (<code class="inline">itead/ewelink-oem-firmware@2.6.1</code>).
-            Before plugging it into your wall, you open the shell, connect a 3.3V FTDI serial adapter to the <code class="inline">J1</code> UART header, and flash open-source <strong>ESPHome <code class="inline">2026.7.0</code></strong> (three versions back).
+            Before plugging it into your wall, you flash it to open-source <strong>ESPHome <code class="inline">2026.7.0</code></strong> (three versions back).
             Over the next four months, you push three wireless OTA updates from <strong>Home Assistant's ESPHome plugin</strong> to patch a Wi-Fi beacon bug, remediate <code class="inline">CVE-2026-4108</code> in <code class="inline">ESPAsyncWebServer</code>, and rotate your Noise API encryption key (<code class="inline">2026.10.3</code>).
           </p>
           <p style="margin-top: 0.65rem;">
@@ -818,7 +818,7 @@ export function renderLandingPage(origin: string): string {
             <span class="lineage-block-meta">2026-07-14 · commit oem-factory-261</span>
           </div>
           <p class="lineage-desc">
-            Records the stock closed-source factory state (<code class="inline">espressif/esp8266-nonos-sdk@2.2.1</code>) and attaches the hardware manual containing the FCC ID (<code class="inline">2APN5S31</code>) and <code class="inline">J1</code> UART pinout.
+            Records the stock closed-source factory state (<code class="inline">espressif/esp8266-nonos-sdk@2.2.1</code>) and attaches the original product Owner's Manual PDF (FCC ID <code class="inline">2APN5S31</code>).
           </p>
           <div class="artifact-links">
             <a class="artifact-btn" href="/ipfs/${ESPHOME_RELEASE.rootCid}/owners-manual.pdf" target="_blank" rel="noopener">
@@ -829,11 +829,11 @@ export function renderLandingPage(origin: string): string {
 
         <div class="lineage-item">
           <div class="lineage-item-top">
-            <span class="lineage-block-title">Block #1 · 3.3V UART Liberation Flash &rarr; ESPHome <code class="inline">2026.7.0</code></span>
+            <span class="lineage-block-title">Block #1 · Initial Flash to Open-Source ESPHome <code class="inline">2026.7.0</code></span>
             <span class="lineage-block-meta">2026-07-15 · commit 7a1c09e</span>
           </div>
           <p class="lineage-desc">
-            Flashed over serial UART (<code class="inline">GPIO0</code> grounded at boot) to open-source ESPHome (3 versions back). Explicitly records removal of <code class="inline">itead/ewelink-oem-firmware</code>, links the official ESPHome device reference, and attaches the exact <code class="inline">sonoff-s31-esphome.yaml</code> configuration.
+            Flashed from proprietary factory firmware to open-source ESPHome (3 versions back). Explicitly records removal of <code class="inline">itead/ewelink-oem-firmware</code>, links the official ESPHome device reference, and attaches the exact <code class="inline">sonoff-s31-esphome.yaml</code> configuration.
           </p>
           <div class="artifact-links">
             <a class="artifact-btn" href="/ipfs/${ESPHOME_RELEASE.rootCid}/sonoff-s31-esphome.yaml" target="_blank" rel="noopener">
@@ -1379,7 +1379,7 @@ go build -o bin/pkaput ./cmd/pkaput
         if (sc.id === 'esphome-s31') {
           gate2Lines = [
             '• <strong>Audit Query:</strong> "Trace Sonoff S31 firmware transition to esphome/esphome@' + queryVer + '"',
-            '• <strong>Block #0 &rarr; #1:</strong> Proprietary eWeLink v2.6.1 (owners-manual.pdf) flashed via 3.3V UART J1 to ESPHome 2026.7.0 (sonoff-s31-esphome.yaml)',
+            '• <strong>Block #0 &rarr; #1:</strong> Proprietary eWeLink v2.6.1 (owners-manual.pdf) flashed to open-source ESPHome 2026.7.0 (sonoff-s31-esphome.yaml)',
             '• <strong>Block #2 &rarr; #4:</strong> 3 Home Assistant ESPHome OTA updates (2026.7.0 &rarr; 2026.8.2 &rarr; 2026.9.1 CVE-2026-4108 fix &rarr; 2026.10.3 Noise rotation)'
           ];
         } else {

@@ -30,7 +30,7 @@ export const SEED_LABEL = "xprn7fzfeggrtg4rqvof6oyyqnpzakawnfug57gmph6n63bzmeqq"
 
 export const ESPHOME_RELEASE: SeedRelease = {
 	id: "esphome-s31",
-	title: "Sonoff S31 Smart Plug (Proprietary OEM -> ESPHome UART -> 3x Home Assistant OTA)",
+	title: "Sonoff S31 Smart Plug (Proprietary OEM -> Open-Source ESPHome -> 3x Home Assistant OTA)",
 	subtitle: "5-block hardware & firmware attestation chain with attached factory Owner's Manual PDF, ESPHome YAML config, and Anchore Syft v1.20.0 CycloneDX SBOM",
 	outputTag: "sonoff-s31-esphome:2026.10.3",
 	flattenedDigest: ESPHOME_DIGEST,
