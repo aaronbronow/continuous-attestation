@@ -634,7 +634,7 @@ export function renderLandingPage(origin: string): string {
 
     .dnslink-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 1rem;
     }
 
@@ -994,6 +994,10 @@ export function renderLandingPage(origin: string): string {
           <div class="dnslink-card">
             <strong>3. Sovereign TLD Governance (<code style="font-family: var(--mono);">.eu</code> / <code style="font-family: var(--mono);">.gov</code>) Without Blob Lock-In</strong>
             Instead of an EU regulator or State government building a monolithic portal to host terabytes of firmware and SBOMs, public agencies can operate an append-only, DNSSEC-signed discovery zone under a sovereign TLD (e.g., <code style="font-family: var(--mono);">_dnslink.&lt;base32&gt;.cra.europa.eu</code> or <code style="font-family: var(--mono);">.wa.gov</code>) while the <code style="font-family: var(--mono);">CARv1</code> bundles remain distributed across IPFS, R2, and local mirrors.
+          </div>
+          <div class="dnslink-card">
+            <strong>4. Frictionless Voluntary Adoption (OEMs &amp; Individual Inventory)</strong>
+            Zero permission is required to start: a hardware manufacturer can adopt this voluntarily today under their existing corporate domain (e.g., <code style="font-family: var(--mono);">_dnslink.&lt;base32&gt;.devices.sonoff.tech</code>), and individual builders or homelab operators who reflash their own devices can track their personal fleet under their own subdomain (e.g., <code style="font-family: var(--mono);">_dnslink.&lt;base32&gt;.examples.packablock.com</code>).
           </div>
         </div>
       </div>
