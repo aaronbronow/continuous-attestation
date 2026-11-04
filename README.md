@@ -2,7 +2,9 @@
 
 [![Continuous Attestation & pkaput Zero-Trust Demo](https://github.com/aaronbronow/continuous-attestation/actions/workflows/continuous-attestation.yml/badge.svg)](https://github.com/aaronbronow/continuous-attestation/actions/workflows/continuous-attestation.yml)
 
-**Live Interactive Verifier & Trustless IPFS Gateway:** [`https://aaronbronow.github.io/continuous-attestation/`](https://aaronbronow.github.io/continuous-attestation/)
+**Live Interactive Verifier & Trustless IPFS Gateways:**
+- **Cloudflare Worker Edge Gateway:** [`https://continuous-attestation-demo.abronow.workers.dev`](https://continuous-attestation-demo.abronow.workers.dev)
+- **GitHub Pages Static IPFS Mirror:** [`https://aaronbronow.github.io/continuous-attestation/`](https://aaronbronow.github.io/continuous-attestation/)
 
 This repository is a live reference implementation and interactive demo showing how **Continuous Attestation** ([`pkablk`](https://github.com/Packablock/packablock-client)) and **`pkaput`** work together to verify every software dependency transition **without vendor lock-in or reliance on a single business-controlled container registry**:
 
@@ -112,7 +114,7 @@ cd worker
 npx wrangler deploy
 
 # Put release bundle to R2 + Storacha and publish DNSLink to Cloudflare DNS
-$env:PKAPUT_WORKER_URL = "https://continuous-attestation-demo.<your-subdomain>.workers.dev"
+$env:PKAPUT_WORKER_URL = "https://continuous-attestation-demo.abronow.workers.dev"
 $env:PKAPUT_WORKER_TOKEN = "<your-worker-put-token>"
 $env:CF_ZONE_ID = "<your-cloudflare-zone-id>"
 $env:CF_API_TOKEN = "<your-cloudflare-dns-token>"
