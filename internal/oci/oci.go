@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 )
@@ -266,14 +267,25 @@ func GenerateCycloneDXSBOM(outputTag, flattenedDigest string, packages map[strin
 		Licenses []licenseEntry `json:"licenses"`
 	}
 
+	names := make([]string, 0, len(packages))
+	for name := range packages {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
 	var comps []component
-	for name, ver := range packages {
+	for _, name := range names {
+		ver := packages[name]
 		cleanVer := strings.TrimPrefix(ver, "v")
+		eco := "golang"
+		if strings.HasPrefix(name, "esphome/") || strings.HasPrefix(name, "platformio/") || strings.HasPrefix(name, "lwip/") {
+			eco = "generic"
+		}
 		comps = append(comps, component{
 			Type:    "library",
 			Name:    name,
 			Version: ver,
-			PURL:    fmt.Sprintf("pkg:golang/%s@v%s", name, cleanVer),
+			PURL:    fmt.Sprintf("pkg:%s/%s@v%s", eco, name, cleanVer),
 			Licenses: []licenseEntry{
 				{License: map[string]string{"id": "MIT"}},
 			},

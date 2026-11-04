@@ -50,6 +50,8 @@ func main() {
 		err = runPreflightGate(args)
 	case "commit-step":
 		err = runCommitStep(args)
+	case "init-esphome-demo":
+		err = runInitESPHomeDemo(args)
 	case "check", "verify":
 		err = runCheck(args)
 	case "help", "-h", "--help":
@@ -80,8 +82,9 @@ Primary Commands:
   preflight-gate   Resolve DNSLink via UDP/DNS (:1053), lazily GET manifests from IPFS/Edge gateways, and run 3 zero-trust audit gates
 
 Helper Commands:
-  check            Verify packablock.yaml cryptographic chain integrity (invokes official pkablk CLI when available)
-  commit-step      Synthetic step builder for standalone testing without Node/Bun`)
+  check              Verify packablock.yaml cryptographic chain integrity (invokes official pkablk CLI when available)
+  init-esphome-demo  Generate the 5-block Sonoff S31 (Proprietary OEM -> ESPHome 2026.7.0 -> 3x HA OTA) chain in examples/esphome-s31/packablock.yaml
+  commit-step        Synthetic step builder for standalone testing without Node/Bun`)
 }
 
 // 1. `pkaput squash-release` (Flattening, Packaging & Putting into Persistent Storage)
@@ -125,6 +128,21 @@ func runSquashRelease(args []string) error {
 		return fmt.Errorf("generating CycloneDX SBOM: %w", err)
 	}
 
+	extraArtifacts := make(map[string][]byte)
+	if *attachFile != "" {
+		for _, part := range strings.Split(*attachFile, ",") {
+			p := strings.TrimSpace(part)
+			if p == "" {
+				continue
+			}
+			attBytes, err := os.ReadFile(p)
+			if err != nil {
+				return fmt.Errorf("reading attached artifact %s: %w", p, err)
+			}
+			extraArtifacts[filepath.Base(p)] = attBytes
+		}
+	}
+
 	// 3. Wrap event into an in-toto DSSE predicate + W3C Verifiable Credential + VSA recording squashedLineage.precursors
 	subj, _, dsseEnv, err := attestation.BuildSquashAttestation(
 		*outputTag,
@@ -132,6 +150,7 @@ func runSquashRelease(args []string) error {
 		flattenedLayer.Size,
 		report.Blocks,
 		km,
+		extraArtifacts,
 	)
 	if err != nil {
 		return fmt.Errorf("building in-toto DSSE attestation: %w", err)
@@ -146,15 +165,6 @@ func runSquashRelease(args []string) error {
 
 	// Push the squashed OCI layer + manifest chain to the local private registry (port 5001)
 	regRef, regErr := oci.PushFlattenedLayerToRegistry(*registryURL, *outputTag, flattenedLayer, chainRawBytes)
-
-	extraArtifacts := make(map[string][]byte)
-	if *attachFile != "" {
-		attBytes, err := os.ReadFile(*attachFile)
-		if err != nil {
-			return fmt.Errorf("reading attached artifact %s: %w", *attachFile, err)
-		}
-		extraArtifacts[filepath.Base(*attachFile)] = attBytes
-	}
 
 	// 4. Bundle files (subject.json, chain.packablock, sbom.cdx.json, attestation.dsse.json) into a .car file
 	bundle := &ipfs.BundleFiles{
@@ -397,6 +407,9 @@ func runPreflightGate(args []string) error {
 	fmt.Printf("   │     • Issuer DID:      %s (Ed25519 DSSE + W3C VC verified)\n", issuerDID)
 	fmt.Printf("   │     • Subject Digest:  sha256:%s (matches target)\n", expectedHex)
 	fmt.Printf("   │     • Chain Integrity: %d blocks verified in %s (terminal meta_hash: %s)\n", len(chainReport.Blocks), filepath.Base(chainSource), chainReport.MetaHash)
+	for _, att := range stmt.Predicate.AttachedArtifacts {
+		fmt.Printf("   │     • Attached Asset:  %s (%d bytes, Leaf CID: %s)\n", att.Name, att.Size, att.CID)
+	}
 
 	transitions := chain.FindTransitions(chainReport.Blocks, *queryPkg, *queryVer)
 	if len(transitions) == 0 {
@@ -411,6 +424,15 @@ func runPreflightGate(args []string) error {
 	fmt.Printf("   │     • Timestamp:       %s\n", tr.Timestamp)
 	fmt.Printf("   │     • Commit & Actor:  commit %s by %s (%s)\n", tr.Commit, tr.Actor, tr.DID)
 	fmt.Printf("   │     • Lineage CIDs:    %s (parent: %s)\n", tr.BlockCID, tr.ParentBlockCID)
+	for _, blk := range chainReport.Blocks {
+		for _, prop := range blk.Meta.Properties {
+			if prop.Filename != "" {
+				fmt.Printf("   │     • Block #%d Asset:  %s -> %s (CID: %s)\n", blk.Meta.BlockIndex, prop.Name, prop.Filename, prop.CID)
+			} else {
+				fmt.Printf("   │     • Block #%d Link:   %s -> %s\n", blk.Meta.BlockIndex, prop.Name, prop.Value)
+			}
+		}
+	}
 
 	// LAZY STEP 3 (GATE 3): Fetch `sbom.cdx.json` only after Gate 1 and Gate 2 succeed
 	sbomBytes, _, err := ipfs.FetchFileFromGateways(gateways, cid, "sbom.cdx.json", ipfsCacheDir)
@@ -501,6 +523,25 @@ func runCommitStep(args []string) error {
 	fmt.Printf("   ├─ Block CID:        %s\n", meta.BlockCID)
 	fmt.Printf("   └─ Meta Hash:        %s\n", meta.MetaHash)
 	return nil
+}
+
+func runInitESPHomeDemo(args []string) error {
+	fs := flag.NewFlagSet("init-esphome-demo", flag.ExitOnError)
+	chainOut := fs.String("chain", "examples/esphome-s31/packablock.yaml", "Output path for the 5-block Sonoff S31 Continuous Attestation chain")
+	manualPath := fs.String("manual", "examples/esphome-s31/owners-manual.pdf", "Path to Sonoff S31 Owner's Manual PDF")
+	esphomeCfgPath := fs.String("config", "examples/esphome-s31/sonoff-s31-esphome.yaml", "Path to ESPHome device YAML configuration")
+	keyFile := fs.String("key", defaultKeyFixture, "Path to Ed25519 key fixture")
+	_ = fs.Parse(args)
+
+	km, err := attestation.LoadKeyMaterial(*keyFile)
+	if err != nil {
+		return fmt.Errorf("loading Ed25519 key material: %w", err)
+	}
+	if err := chain.WriteESPHomeS31DemoChain(*chainOut, *manualPath, *esphomeCfgPath, km.PrivateKey, km.DID, km.SignerIdentity); err != nil {
+		return err
+	}
+	fmt.Printf("⚡ [pkaput init-esphome-demo] Generated 5-block Sonoff S31 Continuous Attestation chain in %s\n", *chainOut)
+	return runCheck([]string{*chainOut})
 }
 
 func runCheck(args []string) error {

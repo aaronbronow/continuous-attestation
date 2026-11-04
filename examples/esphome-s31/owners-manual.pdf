@@ -1,0 +1,55 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2073 >>
+stream
+BT
+/F1 14 Tf 42 745 Td (ITEAD SONOFF S31 - SMART PLUG OWNER MANUAL & HARDWARE SPEC) Tj
+/F1 9 Tf 0 -22 Td (Model: S31 US Type-B | MCU: Espressif ESP8266EX (4MB SPI Flash) | Power IC: CSE7766) Tj
+0 -14 Td (FCC ID: 2APN5S31 | Rating: 120V AC 60Hz, Max 15A / 1800W Resistive) Tj
+0 -26 Td (1. FACTORY PROPRIETARY FIRMWARE BASELINE (GENESIS BLOCK #0)) Tj
+0 -15 Td (   - Shipped Factory Binary: itead/ewelink-oem-firmware v2.6.1 (Closed-Source Cloud Agent)) Tj
+0 -14 Td (   - Base SDK: espressif/esp8266-nonos-sdk v2.2.1 | Cloud Broker: us-ota.coolkit.cc:8080) Tj
+0 -14 Td (   - Security Note: Factory firmware requires remote eWeLink cloud broker and lacks local API.) Tj
+0 -26 Td (2. INTERNAL J1 UART HEADER PINOUT & GPIO MAPPING (FOR ESPHOME LIBERATION FLASH)) Tj
+0 -15 Td (   - WARNING: DISCONNECT S31 FROM 120V AC MAINS BEFORE OPENING ENCLOSURE OR CONNECTING UART!) Tj
+0 -14 Td (   - J1 Pad 1 (Square): VCC 3.3V DC (Regulated 3.3V only - DO NOT apply 5V!)) Tj
+0 -14 Td (   - J1 Pad 2:          RX (GPIO3 / UART0 RX - Shared with CSE7766 at 4800 baud EVEN parity)) Tj
+0 -14 Td (   - J1 Pad 3:          TX (GPIO1 / UART0 TX)) Tj
+0 -14 Td (   - J1 Pad 4:          GND (Common Ground)) Tj
+0 -15 Td (   - Peripherals:       GPIO0  = Side Push Button (Active Low / Hold at boot for Flash Mode)) Tj
+0 -14 Td (                        GPIO12 = SPST 15A Relay (Active High) + Red Status LED) Tj
+0 -14 Td (                        GPIO13 = Blue Network Status LED (Active Low)) Tj
+0 -26 Td (3. CONTINUOUS ATTESTATION & OPEN-SOURCE ESPHOME MIGRATION) Tj
+0 -15 Td (   - Initial UART Flash: esphome/esphome v2026.7.0 (Block #1 - 3 versions historical baseline)) Tj
+0 -14 Td (   - Upstream Device Profile: https://devices.esphome.io/devices/Sonoff-S31) Tj
+0 -14 Td (   - Home Assistant OTA #1: esphome/esphome v2026.8.2 (Block #2 - lwIP Wi-Fi beacon fix)) Tj
+0 -14 Td (   - Home Assistant OTA #2: esphome/esphome v2026.9.1 (Block #3 - ESPAsyncWebServer CVE-2026-4108 fix)) Tj
+0 -14 Td (   - Home Assistant OTA #3: esphome/esphome v2026.10.3 (Block #4 - Noise API encryption rotation)) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000002365 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+2433
+%%EOF

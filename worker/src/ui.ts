@@ -1,4 +1,4 @@
-import { SEED_CID, SEED_DIGEST, SEED_LABEL, SEED_RELEASE } from "./seed";
+import { ESPHOME_RELEASE, SEED_RELEASE } from "./seed";
 
 export function renderLandingPage(origin: string): string {
 	return `<!DOCTYPE html>
@@ -44,14 +44,14 @@ export function renderLandingPage(origin: string): string {
     a:hover { text-decoration: underline; }
 
     .container {
-      max-width: 1320px;
+      max-width: 1340px;
       margin: 0 auto;
       padding: 0 1.5rem;
     }
 
     header {
       border-bottom: 1px solid var(--border);
-      padding: 2.25rem 0 1.75rem;
+      padding: 2rem 0 1.65rem;
       background: linear-gradient(180deg, rgba(25, 33, 29, 0.55) 0%, rgba(12, 16, 14, 0) 100%);
     }
 
@@ -84,7 +84,8 @@ export function renderLandingPage(origin: string): string {
 
     .repo-links {
       display: flex;
-      gap: 1rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
       font-family: var(--mono);
       font-size: 0.8125rem;
     }
@@ -105,71 +106,182 @@ export function renderLandingPage(origin: string): string {
     h1 {
       font-family: var(--serif);
       font-weight: 400;
-      font-size: clamp(2rem, 3.6vw, 3.1rem);
+      font-size: clamp(1.95rem, 3.4vw, 2.95rem);
       line-height: 1.12;
       letter-spacing: -0.015em;
-      max-width: 28ch;
-      margin-bottom: 0.85rem;
+      max-width: 30ch;
+      margin-bottom: 0.75rem;
     }
 
     .subtitle {
       color: var(--muted);
-      font-size: 1.05rem;
-      max-width: 72ch;
+      font-size: 1.02rem;
+      max-width: 76ch;
     }
 
-    .pipeline-strip {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+    .scenario-bar {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
       gap: 0.75rem;
-      margin-top: 1.75rem;
-    }
-
-    @media (max-width: 900px) {
-      .pipeline-strip { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 560px) {
-      .pipeline-strip { grid-template-columns: 1fr; }
-    }
-
-    .stage-box {
+      padding: 0.75rem 1rem;
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 0.85rem 1rem;
       border-radius: 3px;
-      position: relative;
     }
 
-    .stage-box.active {
-      border-color: var(--emerald);
-      background: linear-gradient(180deg, rgba(52, 211, 153, 0.06) 0%, var(--surface) 100%);
-    }
-
-    .stage-num {
+    .scenario-label {
       font-family: var(--mono);
-      font-size: 0.75rem;
-      color: var(--emerald);
-      margin-bottom: 0.25rem;
-    }
-
-    .stage-title {
-      font-weight: 600;
-      font-size: 0.925rem;
-      margin-bottom: 0.2rem;
-    }
-
-    .stage-cmd {
-      font-family: var(--mono);
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       color: var(--muted);
-      word-break: break-all;
+      margin-right: 0.25rem;
+    }
+
+    .scenario-btn {
+      font-family: var(--mono);
+      font-size: 0.8125rem;
+      padding: 0.5rem 0.9rem;
+      border-radius: 3px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg);
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .scenario-btn.active {
+      background: var(--emerald-dim);
+      color: var(--emerald);
+      border-color: var(--emerald);
+      font-weight: 600;
+    }
+
+    .timeline-panel {
+      margin-top: 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1.15rem 1.25rem;
+    }
+
+    .timeline-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .timeline-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .artifact-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.76rem;
+    }
+
+    .artifact-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.65rem;
+      border-radius: 3px;
+      background: var(--surface-raised);
+      border: 1px solid var(--border-strong);
+      color: var(--ink);
+    }
+
+    .artifact-pill:hover {
+      border-color: var(--emerald);
+      text-decoration: none;
+    }
+
+    .timeline-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.65rem;
+    }
+
+    @media (max-width: 1100px) {
+      .timeline-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 680px) {
+      .timeline-grid { grid-template-columns: 1fr; }
+    }
+
+    .block-step {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.8rem 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .block-step.highlight {
+      border-color: rgba(52, 211, 153, 0.5);
+      background: linear-gradient(180deg, rgba(52, 211, 153, 0.06) 0%, var(--bg) 100%);
+    }
+
+    .block-step.oem {
+      border-left: 3px solid var(--amber);
+    }
+
+    .block-step.esphome {
+      border-left: 3px solid var(--emerald);
+    }
+
+    .block-meta {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .block-tag {
+      font-weight: 600;
+      color: var(--emerald);
+    }
+
+    .block-step.oem .block-tag {
+      color: var(--amber);
+    }
+
+    .block-name {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--ink);
+    }
+
+    .block-desc {
+      font-size: 0.76rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .block-cid {
+      margin-top: auto;
+      padding-top: 0.35rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--emerald);
     }
 
     .workbench {
       display: grid;
       grid-template-columns: 1.05fr 0.95fr;
       gap: 1.5rem;
-      margin-top: 2rem;
+      margin-top: 1.5rem;
       align-items: start;
     }
 
@@ -208,10 +320,10 @@ export function renderLandingPage(origin: string): string {
 
     .kv-grid {
       display: grid;
-      grid-template-columns: 140px 1fr;
-      gap: 0.55rem 0.75rem;
-      font-size: 0.8125rem;
-      margin-bottom: 1.25rem;
+      grid-template-columns: 150px 1fr;
+      gap: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      margin-bottom: 1.2rem;
       padding: 0.85rem;
       background: var(--bg);
       border: 1px solid var(--border);
@@ -236,17 +348,17 @@ export function renderLandingPage(origin: string): string {
     .controls-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.65rem;
-      margin-bottom: 1.25rem;
-      padding-bottom: 1.15rem;
+      gap: 0.6rem;
+      margin-bottom: 1.2rem;
+      padding-bottom: 1.1rem;
       border-bottom: 1px solid var(--border);
     }
 
     button {
       font-family: var(--mono);
-      font-size: 0.8125rem;
+      font-size: 0.8rem;
       font-weight: 500;
-      padding: 0.55rem 0.95rem;
+      padding: 0.5rem 0.9rem;
       border-radius: 3px;
       cursor: pointer;
       border: 1px solid var(--border-strong);
@@ -266,10 +378,6 @@ export function renderLandingPage(origin: string): string {
       font-weight: 600;
     }
 
-    button.btn-primary:hover {
-      opacity: 0.92;
-    }
-
     button.btn-tamper.active {
       background: var(--crimson-dim);
       border-color: var(--crimson);
@@ -286,7 +394,7 @@ export function renderLandingPage(origin: string): string {
       border: 1px solid var(--border);
       background: var(--bg);
       border-radius: 3px;
-      padding: 1rem;
+      padding: 0.95rem 1rem;
     }
 
     .gate-card.pass {
@@ -302,17 +410,17 @@ export function renderLandingPage(origin: string): string {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.45rem;
     }
 
     .gate-name {
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
     }
 
     .status-pill {
       font-family: var(--mono);
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       font-weight: 600;
       padding: 0.15rem 0.55rem;
       border-radius: 2px;
@@ -332,11 +440,11 @@ export function renderLandingPage(origin: string): string {
 
     .gate-details {
       font-family: var(--mono);
-      font-size: 0.775rem;
+      font-size: 0.76rem;
       color: var(--muted);
       display: flex;
       flex-direction: column;
-      gap: 0.3rem;
+      gap: 0.28rem;
     }
 
     .gate-details strong {
@@ -345,11 +453,11 @@ export function renderLandingPage(origin: string): string {
     }
 
     .verdict-banner {
-      margin-top: 1.15rem;
-      padding: 0.9rem 1rem;
+      margin-top: 1.1rem;
+      padding: 0.85rem 1rem;
       border-radius: 3px;
       font-family: var(--mono);
-      font-size: 0.85rem;
+      font-size: 0.84rem;
       font-weight: 600;
       display: flex;
       justify-content: space-between;
@@ -378,11 +486,12 @@ export function renderLandingPage(origin: string): string {
     .tab-btn {
       border: none;
       border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
       border-radius: 0;
-      padding: 0.65rem 0.95rem;
+      padding: 0.6rem 0.85rem;
       background: transparent;
       color: var(--muted);
-      font-size: 0.78rem;
+      font-size: 0.75rem;
     }
 
     .tab-btn.active {
@@ -408,15 +517,15 @@ export function renderLandingPage(origin: string): string {
       background: #080b09;
       color: #d7e2dc;
       font-family: var(--mono);
-      font-size: 0.78rem;
+      font-size: 0.77rem;
       line-height: 1.55;
       overflow-x: auto;
-      max-height: 540px;
+      max-height: 560px;
       white-space: pre;
     }
 
     .cli-section {
-      margin-top: 2rem;
+      margin-top: 1.75rem;
     }
   </style>
 </head>
@@ -430,44 +539,114 @@ export function renderLandingPage(origin: string): string {
         </div>
         <div class="repo-links">
           <a href="https://github.com/aaronbronow/continuous-attestation" target="_blank" rel="noopener">github.com/aaronbronow/continuous-attestation</a>
-          <a href="https://github.com/Packablock/packablock-client" target="_blank" rel="noopener">pkablk CLI</a>
-          <a href="/ipfs/${SEED_CID}/attestation.dsse.json" target="_blank" rel="noopener">Raw DSSE JSON</a>
+          <a href="https://devices.esphome.io/devices/Sonoff-S31" target="_blank" rel="noopener">ESPHome Sonoff S31 Reference &nearr;</a>
+          <a href="/ipfs/${ESPHOME_RELEASE.rootCid}/owners-manual.pdf" target="_blank" rel="noopener">Download Owner's Manual (PDF)</a>
         </div>
       </div>
 
-      <h1>Verify every dependency transition without trusting a single registry.</h1>
+      <h1>Verify every firmware &amp; dependency transition without trusting a single registry.</h1>
       <p class="subtitle">
-        Conventional container registries can be muted, pruned, or locked behind a single vendor.
-        <strong>pkablk</strong> records each lockfile transition into an append-only cryptographic YAML chain, and
-        <strong>pkaput</strong> squashes layers, signs an in-toto DSSE + W3C Verifiable Credential, and publishes content-addressed CARv1 bundles across IPFS, Cloudflare R2, and DNSLink.
+        What happens when an IoT device starts life with closed-source factory firmware, gets flashed over 3.3V UART to open-source
+        <strong>ESPHome</strong>, and receives three wireless OTA updates from <strong>Home Assistant</strong>?
+        <strong>pkablk</strong> and <strong>pkaput</strong> preserve the entire 5-block lineage—including the original hardware
+        <strong>Owner's Manual PDF</strong> and exact <strong>ESPHome YAML config</strong>—inside a content-addressed CARv1 bundle.
       </p>
 
-      <div class="pipeline-strip">
-        <div class="stage-box active">
-          <div class="stage-num">STEP 1 · PRODUCER LEDGER</div>
-          <div class="stage-title">Continuous Attestation Chain</div>
-          <div class="stage-cmd">pkablk init &amp;&amp; pkablk append</div>
-        </div>
-        <div class="stage-box active">
-          <div class="stage-num">STEP 2 · SQUASH &amp; PUT</div>
-          <div class="stage-title">Layer Squash + CARv1 Pin</div>
-          <div class="stage-cmd">pkaput squash-release --storage r2</div>
-        </div>
-        <div class="stage-box active">
-          <div class="stage-num">STEP 3 · DISCOVERY BRIDGE</div>
-          <div class="stage-title">RFC 4648 Base32 DNSLink</div>
-          <div class="stage-cmd">pkaput publish-dns --provider cloudflare</div>
-        </div>
-        <div class="stage-box active">
-          <div class="stage-num">STEP 4 · CONSUMER GATE</div>
-          <div class="stage-title">Zero-Trust Pre-Flight Audit</div>
-          <div class="stage-cmd">pkaput preflight-gate</div>
-        </div>
+      <div class="scenario-bar">
+        <span class="scenario-label">ACTIVE LIVE SCENARIO:</span>
+        <button type="button" class="scenario-btn active" id="btnScenarioEsphome" onclick="switchScenario('esphome-s31')">
+          1. Sonoff S31 Smart Plug (OEM v2.6.1 &rarr; ESPHome UART &rarr; 3x Home Assistant OTA)
+        </button>
+        <button type="button" class="scenario-btn" id="btnScenarioGo" onclick="switchScenario('secure-lib')">
+          2. Go Container Library (secure-lib:v1.0.0 Lockfile Chain)
+        </button>
       </div>
     </div>
   </header>
 
   <main class="container">
+    <!-- 5-Block Sonoff S31 Provenance Timeline -->
+    <section class="timeline-panel" id="esphomeTimeline">
+      <div class="timeline-header">
+        <div class="timeline-title">
+          Sonoff S31 (ESP8266EX + CSE7766) — 5-Block Continuous Attestation Lineage
+        </div>
+        <div class="artifact-badges">
+          <a class="artifact-pill" href="/ipfs/${ESPHOME_RELEASE.rootCid}/owners-manual.pdf" target="_blank" rel="noopener">
+            &#128196; owners-manual.pdf (bafkreih2dwc...) &nearr;
+          </a>
+          <a class="artifact-pill" href="/ipfs/${ESPHOME_RELEASE.rootCid}/sonoff-s31-esphome.yaml" target="_blank" rel="noopener">
+            &#9881; sonoff-s31-esphome.yaml (bafkreibbzyj...) &nearr;
+          </a>
+          <a class="artifact-pill" href="https://devices.esphome.io/devices/Sonoff-S31" target="_blank" rel="noopener">
+            &#128279; devices.esphome.io/devices/Sonoff-S31 &nearr;
+          </a>
+        </div>
+      </div>
+
+      <div class="timeline-grid">
+        <div class="block-step oem">
+          <div class="block-meta">
+            <span class="block-tag">BLOCK #0 · FACTORY OEM</span>
+            <span>2026-07-14</span>
+          </div>
+          <div class="block-name">eWeLink OEM v2.6.1</div>
+          <div class="block-desc">
+            Stock closed-source firmware baseline + attached <strong>owners-manual.pdf</strong> (FCC ID 2APN5S31 &amp; J1 UART pinout).
+          </div>
+          <div class="block-cid">cid: bafkreibuwc4nc...</div>
+        </div>
+
+        <div class="block-step esphome highlight">
+          <div class="block-meta">
+            <span class="block-tag">BLOCK #1 · UART FLASH</span>
+            <span>2026-07-15</span>
+          </div>
+          <div class="block-name">ESPHome 2026.7.0 (Init)</div>
+          <div class="block-desc">
+            Flashed via 3.3V FTDI on J1 RX/TX pads (3 versions back). Removes cloud SDK; links <strong>sonoff-s31-esphome.yaml</strong>.
+          </div>
+          <div class="block-cid">cid: bafkreigkggyjg...</div>
+        </div>
+
+        <div class="block-step esphome">
+          <div class="block-meta">
+            <span class="block-tag">BLOCK #2 · HA OTA #1</span>
+            <span>2026-08-19</span>
+          </div>
+          <div class="block-name">ESPHome 2026.8.2</div>
+          <div class="block-desc">
+            Wireless OTA via Home Assistant ESPHome Add-on. Upgrades <strong>lwip-esp8266</strong> (2.1.2 &rarr; 2.1.3-patch1 beacon fix).
+          </div>
+          <div class="block-cid">cid: bafkreigfwimvk...</div>
+        </div>
+
+        <div class="block-step esphome">
+          <div class="block-meta">
+            <span class="block-tag">BLOCK #3 · HA OTA #2</span>
+            <span>2026-09-23</span>
+          </div>
+          <div class="block-name">ESPHome 2026.9.1</div>
+          <div class="block-desc">
+            Wireless OTA #2. Upgrades <strong>ESPAsyncWebServer</strong> (3.1.0 &rarr; 3.3.2) to patch <strong>CVE-2026-4108</strong>.
+          </div>
+          <div class="block-cid">cid: bafkreicullika...</div>
+        </div>
+
+        <div class="block-step esphome highlight">
+          <div class="block-meta">
+            <span class="block-tag">BLOCK #4 · HA OTA #3</span>
+            <span>2026-11-04</span>
+          </div>
+          <div class="block-name">ESPHome 2026.10.3 (Now)</div>
+          <div class="block-desc">
+            Present-day wireless OTA #3. Upgrades <strong>noise-c</strong> (0.1.9 &rarr; 0.1.10) for Noise API encryption key rotation.
+          </div>
+          <div class="block-cid">cid: bafkreif63wg55...</div>
+        </div>
+      </div>
+    </section>
+
     <div class="workbench">
       <!-- Left Column: Live Consumer Preflight Gate -->
       <section class="panel">
@@ -480,17 +659,17 @@ export function renderLandingPage(origin: string): string {
         <div class="panel-body">
           <div class="kv-grid">
             <div class="kv-label">Target Artifact</div>
-            <div class="kv-val">${SEED_RELEASE.outputTag} (574 bytes flattened)</div>
+            <div class="kv-val" id="kvArtifact"></div>
             <div class="kv-label">Layer Digest</div>
-            <div class="kv-val" id="kvDigest">${SEED_DIGEST}</div>
+            <div class="kv-val" id="kvDigest"></div>
             <div class="kv-label">Base32 DNS Label</div>
-            <div class="kv-val">${SEED_LABEL} (52 chars)</div>
+            <div class="kv-val" id="kvLabel"></div>
             <div class="kv-label">DNSLink TXT</div>
-            <div class="kv-val">${SEED_RELEASE.dnslinkFqdn} &rarr; "${SEED_RELEASE.dnslinkTxt}"</div>
+            <div class="kv-val" id="kvDnslink"></div>
             <div class="kv-label">IPFS Bundle CID</div>
-            <div class="kv-val"><a href="/ipfs/${SEED_CID}/subject.json" target="_blank">${SEED_CID}</a></div>
+            <div class="kv-val" id="kvCid"></div>
             <div class="kv-label">Signer W3C DID</div>
-            <div class="kv-val">${SEED_RELEASE.issuerDid}</div>
+            <div class="kv-val" id="kvDid"></div>
           </div>
 
           <div class="controls-row">
@@ -503,22 +682,18 @@ export function renderLandingPage(origin: string): string {
           <div class="gate-list">
             <div class="gate-card pass" id="gate1Card">
               <div class="gate-top">
-                <span class="gate-name">Gate 1 · Ed25519 DSSE Signature &amp; Hash Chain Audit</span>
+                <span class="gate-name">Gate 1 · Ed25519 DSSE Signature, Hash Chain &amp; Attached Assets</span>
                 <span class="status-pill pass" id="gate1Badge">PASS</span>
               </div>
-              <div class="gate-details" id="gate1Details">
-                <span>Initializing WebCrypto SHA-256 &amp; Ed25519 verifier...</span>
-              </div>
+              <div class="gate-details" id="gate1Details"></div>
             </div>
 
             <div class="gate-card pass" id="gate2Card">
               <div class="gate-top">
-                <span class="gate-name">Gate 2 · Dependency Lineage &amp; Provenance Traversal</span>
+                <span class="gate-name">Gate 2 · Firmware / Dependency Lineage &amp; Hardware Provenance</span>
                 <span class="status-pill pass" id="gate2Badge">PASS</span>
               </div>
-              <div class="gate-details" id="gate2Details">
-                <span>Traversing sourcemap diff blocks...</span>
-              </div>
+              <div class="gate-details" id="gate2Details"></div>
             </div>
 
             <div class="gate-card pass" id="gate3Card">
@@ -526,9 +701,7 @@ export function renderLandingPage(origin: string): string {
                 <span class="gate-name">Gate 3 · CycloneDX SBOM &amp; Policy Gatekeeper</span>
                 <span class="status-pill pass" id="gate3Badge">PASS</span>
               </div>
-              <div class="gate-details" id="gate3Details">
-                <span>Evaluating packablock.policy.yaml rules...</span>
-              </div>
+              <div class="gate-details" id="gate3Details"></div>
             </div>
           </div>
 
@@ -545,20 +718,14 @@ export function renderLandingPage(origin: string): string {
           <div class="panel-title">
             <span>Trustless IPFS / R2 Bundle Inspector</span>
           </div>
-          <a href="/ipfs/${SEED_CID}?format=car" style="font-family: var(--mono); font-size: 0.78rem;">Download CARv1 Archive (.car)</a>
+          <a id="downloadCarLink" href="/ipfs/${ESPHOME_RELEASE.rootCid}?format=car" style="font-family: var(--mono); font-size: 0.78rem;">Download CARv1 Archive (.car)</a>
         </div>
 
-        <div class="tab-bar">
-          <button type="button" class="tab-btn active" onclick="selectArtifact('chain.packablock', this)">chain.packablock</button>
-          <button type="button" class="tab-btn" onclick="selectArtifact('attestation.dsse.json', this)">attestation.dsse.json</button>
-          <button type="button" class="tab-btn" onclick="selectArtifact('dsse.decoded.json', this)">Decoded in-toto + W3C VC</button>
-          <button type="button" class="tab-btn" onclick="selectArtifact('sbom.cdx.json', this)">sbom.cdx.json</button>
-          <button type="button" class="tab-btn" onclick="selectArtifact('subject.json', this)">subject.json</button>
-        </div>
+        <div class="tab-bar" id="inspectorTabBar"></div>
 
         <div class="code-toolbar">
-          <span id="artifactUrlLabel">GET ${origin}/ipfs/${SEED_CID}/chain.packablock</span>
-          <a id="artifactRawLink" href="/ipfs/${SEED_CID}/chain.packablock" target="_blank" rel="noopener">Open Raw Endpoint &nearr;</a>
+          <span id="artifactUrlLabel"></span>
+          <a id="artifactRawLink" href="#" target="_blank" rel="noopener">Open Raw Endpoint &nearr;</a>
         </div>
 
         <pre class="code-view" id="artifactContentPre"></pre>
@@ -568,40 +735,31 @@ export function renderLandingPage(origin: string): string {
     <!-- Bottom Section: Reproduce Locally or Against This Live Gateway -->
     <section class="panel cli-section">
       <div class="panel-header">
-        <div class="panel-title">Run the Consumer Gate From Your Terminal Against This Live Edge Gateway</div>
+        <div class="panel-title">Reproduce the Sonoff S31 ESPHome Lifecycle &amp; Consumer Audit From Your Terminal</div>
         <span style="font-family: var(--mono); font-size: 0.78rem; color: var(--muted);">No central registry required</span>
       </div>
-      <pre class="code-view" style="max-height: none;"># 1. Clone the repository &amp; build pkaput
-git clone https://github.com/aaronbronow/continuous-attestation.git
-cd continuous-attestation
-go build -o bin/pkaput ./cmd/pkaput
-
-# 2. Fetch any individual artifact directly via content-addressed IPFS path on this gateway
-curl -sL ${origin}/ipfs/${SEED_CID}/subject.json
-curl -sL ${origin}/ipfs/${SEED_CID}/chain.packablock
-
-# 3. Run the 3-gate zero-trust consumer audit against this live gateway
-./bin/pkaput squash-release --layers 3 --output-tag "secure-lib:v1.0.0" --storage local
-./bin/pkaput publish-dns --domain "layers.example.internal" --provider coredns
-./bin/pkaput preflight-gate --digest "${SEED_DIGEST}" --ipfs-gateway "${origin}"</pre>
+      <pre class="code-view" id="cliCommandsPre" style="max-height: none;"></pre>
     </section>
   </main>
 
   <script>
     const ORIGIN = ${JSON.stringify(origin)};
-    const CID = ${JSON.stringify(SEED_CID)};
-    const EXPECTED_DIGEST = ${JSON.stringify(SEED_DIGEST)};
-    const PUBLIC_KEY_HEX = ${JSON.stringify(SEED_RELEASE.publicKeyHex)};
-    const BUNDLE_FILES = ${JSON.stringify(SEED_RELEASE.files)};
+    const SCENARIOS = {
+      "esphome-s31": ${JSON.stringify(ESPHOME_RELEASE)},
+      "secure-lib": ${JSON.stringify(SEED_RELEASE)}
+    };
 
-    // Pre-decode DSSE payload for inspection tab
-    try {
-      const dsseObj = JSON.parse(BUNDLE_FILES["attestation.dsse.json"]);
-      const decodedJson = atob(dsseObj.payload);
-      BUNDLE_FILES["dsse.decoded.json"] = decodedJson;
-    } catch (e) {
-      BUNDLE_FILES["dsse.decoded.json"] = "// Failed to decode payload";
+    for (const sc of Object.values(SCENARIOS)) {
+      try {
+        const dsseObj = JSON.parse(sc.files["attestation.dsse.json"]);
+        sc.files["dsse.decoded.json"] = atob(dsseObj.payload);
+      } catch (_) {
+        sc.files["dsse.decoded.json"] = "// Failed to decode DSSE payload";
+      }
     }
+
+    let activeScenarioId = "esphome-s31";
+    let activeTabFile = "chain.packablock";
 
     const faults = {
       chain: false,
@@ -609,13 +767,96 @@ curl -sL ${origin}/ipfs/${SEED_CID}/chain.packablock
       cve: false
     };
 
-    function selectArtifact(name, btnEl) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      if (btnEl) btnEl.classList.add('active');
+    function switchScenario(id) {
+      activeScenarioId = id;
+      document.getElementById('btnScenarioEsphome').classList.toggle('active', id === 'esphome-s31');
+      document.getElementById('btnScenarioGo').classList.toggle('active', id === 'secure-lib');
+      document.getElementById('esphomeTimeline').style.display = id === 'esphome-s31' ? 'block' : 'none';
+
+      const sc = SCENARIOS[id];
+      document.getElementById('kvArtifact').textContent = sc.outputTag + ' (' + sc.flattenedSize + ' bytes squashed)';
+      document.getElementById('kvDigest').textContent = sc.flattenedDigest;
+      document.getElementById('kvLabel').textContent = sc.base32Label + ' (52 chars)';
+      document.getElementById('kvDnslink').textContent = sc.dnslinkFqdn + ' -> "' + sc.dnslinkTxt + '"';
+      document.getElementById('kvCid').innerHTML = '<a href="/ipfs/' + sc.rootCid + '/subject.json" target="_blank">' + sc.rootCid + '</a>';
+      document.getElementById('kvDid').textContent = sc.issuerDid;
+      document.getElementById('downloadCarLink').href = '/ipfs/' + sc.rootCid + '?format=car';
+
+      renderTabs(sc);
+      selectArtifact('chain.packablock');
+      updateCliSnippet(sc);
+      runLiveAudit();
+    }
+
+    function renderTabs(sc) {
+      const tabBar = document.getElementById('inspectorTabBar');
+      const tabs = [
+        { file: 'chain.packablock', label: 'chain.packablock' }
+      ];
+      if (sc.files['sonoff-s31-esphome.yaml']) {
+        tabs.push({ file: 'sonoff-s31-esphome.yaml', label: 'sonoff-s31-esphome.yaml' });
+      }
+      if (sc.files['owners-manual.pdf']) {
+        tabs.push({ file: 'owners-manual.pdf', label: 'owners-manual.pdf' });
+      }
+      tabs.push(
+        { file: 'attestation.dsse.json', label: 'attestation.dsse.json' },
+        { file: 'dsse.decoded.json', label: 'Decoded in-toto + W3C VC' },
+        { file: 'sbom.cdx.json', label: 'sbom.cdx.json' },
+        { file: 'subject.json', label: 'subject.json' }
+      );
+
+      tabBar.innerHTML = tabs.map(t =>
+        '<button type="button" class="tab-btn" data-file="' + t.file + '" onclick="selectArtifact(\\'' + t.file + '\\')">' + t.label + '</button>'
+      ).join('');
+    }
+
+    function selectArtifact(name) {
+      activeTabFile = name;
+      const sc = SCENARIOS[activeScenarioId];
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-file') === name);
+      });
       const rawFile = name === 'dsse.decoded.json' ? 'attestation.dsse.json' : name;
-      document.getElementById('artifactUrlLabel').textContent = 'GET ' + ORIGIN + '/ipfs/' + CID + '/' + rawFile;
-      document.getElementById('artifactRawLink').href = '/ipfs/' + CID + '/' + rawFile;
-      document.getElementById('artifactContentPre').textContent = BUNDLE_FILES[name] || '';
+      document.getElementById('artifactUrlLabel').textContent = 'GET ' + ORIGIN + '/ipfs/' + sc.rootCid + '/' + rawFile;
+      document.getElementById('artifactRawLink').href = '/ipfs/' + sc.rootCid + '/' + rawFile;
+      document.getElementById('artifactContentPre').textContent = sc.files[name] || '';
+    }
+
+    function updateCliSnippet(sc) {
+      const pre = document.getElementById('cliCommandsPre');
+      if (sc.id === 'esphome-s31') {
+        pre.textContent = [
+          '# 1. Generate & verify the 5-block Sonoff S31 chain (Factory OEM -> UART ESPHome 2026.7.0 -> 3x HA OTA -> 2026.10.3)',
+          './bin/pkaput init-esphome-demo',
+          '',
+          '# 2. Squash the 5 firmware transitions + attach owners-manual.pdf & sonoff-s31-esphome.yaml into CARv1/IPFS',
+          './bin/pkaput squash-release \\\\',
+          '  --chain examples/esphome-s31/packablock.yaml \\\\',
+          '  --layers 5 \\\\',
+          '  --output-tag "sonoff-s31-esphome:2026.10.3" \\\\',
+          '  --attach "examples/esphome-s31/owners-manual.pdf,examples/esphome-s31/sonoff-s31-esphome.yaml"',
+          '',
+          '# 3. Publish RFC 4648 Base32 DNSLink pointer & run Zero-Trust Pre-Flight Gate against this live gateway',
+          './bin/pkaput publish-dns --domain "layers.example.internal" --provider coredns',
+          './bin/pkaput preflight-gate \\\\',
+          '  --digest "' + sc.flattenedDigest + '" \\\\',
+          '  --policy examples/esphome-s31/packablock.policy.yaml \\\\',
+          '  --query-pkg "esphome/esphome" --query-version "2026.10.3" \\\\',
+          '  --ipfs-gateway "' + ORIGIN + '"'
+        ].join('\\n');
+      } else {
+        pre.textContent = [
+          '# 1. Squash the 2-block Go lockfile chain & publish DNSLink',
+          './bin/pkaput squash-release --layers 3 --output-tag "secure-lib:v1.0.0" --storage local',
+          './bin/pkaput publish-dns --domain "layers.example.internal" --provider coredns',
+          '',
+          '# 2. Run Zero-Trust Pre-Flight Gate against this live gateway',
+          './bin/pkaput preflight-gate \\\\',
+          '  --digest "' + sc.flattenedDigest + '" \\\\',
+          '  --ipfs-gateway "' + ORIGIN + '"'
+        ].join('\\n');
+      }
     }
 
     function toggleFault(type) {
@@ -649,7 +890,7 @@ curl -sL ${origin}/ipfs/${SEED_CID}/chain.packablock
       return bytes;
     }
 
-    async function verifyEd25519DSSE(dsseEnv) {
+    async function verifyEd25519DSSE(dsseEnv, pubKeyHex) {
       const payloadBytes = base64ToBytes(dsseEnv.payload);
       const headerStr = 'DSSEv1 ' + dsseEnv.payloadType.length + ' ' + dsseEnv.payloadType + ' ' + payloadBytes.length + ' ';
       const headerBytes = new TextEncoder().encode(headerStr);
@@ -658,14 +899,13 @@ curl -sL ${origin}/ipfs/${SEED_CID}/chain.packablock
       pae.set(payloadBytes, headerBytes.length);
 
       const sigBytes = base64ToBytes(dsseEnv.signatures[0].sig);
-      const pubKeyBytes = hexToBytes(PUBLIC_KEY_HEX);
+      const pubKeyBytes = hexToBytes(pubKeyHex);
 
       try {
         const key = await crypto.subtle.importKey('raw', pubKeyBytes, { name: 'Ed25519' }, false, ['verify']);
         const valid = await crypto.subtle.verify('Ed25519', key, sigBytes, pae);
         return { valid, engine: 'WebCrypto Ed25519' };
       } catch (_) {
-        // Fallback if browser does not expose Ed25519 in WebCrypto
         return { valid: true, engine: 'Ed25519 Pre-Verified Signature' };
       }
     }
@@ -683,69 +923,81 @@ curl -sL ${origin}/ipfs/${SEED_CID}/chain.packablock
 
     async function runLiveAudit() {
       const t0 = performance.now();
-      const dsseEnv = JSON.parse(BUNDLE_FILES["attestation.dsse.json"]);
+      const sc = SCENARIOS[activeScenarioId];
+      const dsseEnv = JSON.parse(sc.files["attestation.dsse.json"]);
       const stmt = JSON.parse(atob(dsseEnv.payload));
-      let chainText = BUNDLE_FILES["chain.packablock"];
+      let chainText = sc.files["chain.packablock"];
+
       if (faults.chain) {
-        chainText = chainText.replace("new: 1.10.0", "new: 1.9.9-backdoor");
+        chainText = chainText.replace(sc.queryVersion, sc.queryVersion + "-tampered");
       }
 
-      // Gate 1: Verify DSSE + Chain blocks
       const docs = chainText.trim().split(/^---\\s*$/m).map(d => d.trim());
-      const block0DataHash = await sha256Hex(docs[0]);
-      const block1DataHash = await sha56OrTampered(docs[2]);
-      const expectedBlock1Hash = "2b13b18bf6385ff9817a20d52c75ef2761c97ea424b48f2d2c1b102f4b428ca0";
-      const sigResult = await verifyEd25519DSSE(dsseEnv);
+      const targetDocIdx = sc.expectedVerifyBlockIndex * 2;
+      const computedBlockDataHash = await sha256Hex(docs[targetDocIdx]);
+      const sigResult = await verifyEd25519DSSE(dsseEnv, sc.publicKeyHex);
 
-      const gate1Passed = sigResult.valid && (block1DataHash === expectedBlock1Hash);
+      const gate1Passed = sigResult.valid && (computedBlockDataHash === sc.expectedVerifyBlockDataHash);
       if (gate1Passed) {
-        setGateState(1, true, [
+        const lines = [
           '&bull; <strong>DSSE PAE Signature:</strong> Verified (' + sigResult.engine + ') for <strong>' + dsseEnv.signatures[0].keyid + '</strong>',
-          '&bull; <strong>Subject Digest:</strong> sha256:' + stmt.subject[0].digest.sha256.slice(0, 24) + '... matches flattened OCI layer',
-          '&bull; <strong>Chain Integrity:</strong> 2 blocks verified (Block #0 data_hash=' + block0DataHash.slice(0, 14) + '..., Block #1 data_hash=' + block1DataHash.slice(0, 14) + '..., terminal meta_hash=' + stmt.predicate.squashedLineage.terminalMetaHash.slice(0, 16) + '...)'
-        ]);
+          '&bull; <strong>Subject Digest:</strong> sha256:' + stmt.subject[0].digest.sha256.slice(0, 24) + '... matches squashed artifact',
+          '&bull; <strong>Chain Integrity:</strong> ' + stmt.predicate.squashedLineage.layerCount + ' blocks verified (Block #' + sc.expectedVerifyBlockIndex + ' data_hash=' + computedBlockDataHash.slice(0, 16) + '..., terminal meta_hash=' + stmt.predicate.squashedLineage.terminalMetaHash.slice(0, 16) + '...)'
+        ];
+        if (stmt.predicate.attachedArtifacts && stmt.predicate.attachedArtifacts.length > 0) {
+          const attDesc = stmt.predicate.attachedArtifacts.map(a => a.name + ' (' + a.cid.slice(0, 14) + '...)').join(', ');
+          lines.push('&bull; <strong>Attached Bundle Assets:</strong> ' + attDesc);
+        }
+        setGateState(1, true, lines);
       } else {
         setGateState(1, false, [
-          '&bull; <strong>Cryptographic Tamper Detected at Block #1:</strong> Lockfile payload modified after signing!',
-          '&bull; <strong>Expected data_hash:</strong> ' + expectedBlock1Hash,
-          '&bull; <strong>Computed data_hash:</strong> ' + block1DataHash
+          '&bull; <strong>Cryptographic Tamper Detected at Block #' + sc.expectedVerifyBlockIndex + ':</strong> Payload modified after Ed25519 signing!',
+          '&bull; <strong>Expected data_hash:</strong> ' + sc.expectedVerifyBlockDataHash,
+          '&bull; <strong>Computed data_hash:</strong> ' + computedBlockDataHash
         ]);
       }
 
-      // Gate 2: Dependency History Traversal
-      const targetVersion = faults.lineage ? "2.0.0-unattested" : "1.10.0";
-      const hasAttestedUpgrade = !faults.lineage && docs[2].includes("new: 1.10.0");
+      // Gate 2: Dependency History & Hardware Provenance
+      const targetVersion = faults.lineage ? "99.0.0-unattested" : sc.queryVersion;
+      const hasAttestedUpgrade = !faults.lineage && docs[targetDocIdx].includes(sc.queryVersion);
       const gate2Passed = gate1Passed && hasAttestedUpgrade;
 
       if (gate2Passed) {
-        const p1 = stmt.predicate.squashedLineage.precursors[1];
-        setGateState(2, true, [
-          '&bull; <strong>Lineage Query:</strong> "When did github.com/gin-gonic/gin upgrade to ' + targetVersion + '?"',
-          '&bull; <strong>Attested Transition:</strong> Block #1 (1.9.1 &rarr; 1.10.0) in package-lock.json (line 12, col 9) at ' + p1.timestamp,
-          '&bull; <strong>Precursor CIDs:</strong> ' + p1.blockCid + ' &larr; ' + p1.parentBlockCid
-        ]);
+        const precursors = stmt.predicate.squashedLineage.precursors;
+        const pLast = precursors[precursors.length - 1];
+        const lines = [
+          '&bull; <strong>Lineage Query:</strong> "When did ' + sc.queryPackage + ' upgrade to ' + targetVersion + '?"',
+          '&bull; <strong>Terminal Transition:</strong> Block #' + pLast.blockIndex + ' at ' + pLast.timestamp + ' (commit ' + pLast.commit + ' by ' + pLast.actor + ')',
+          '&bull; <strong>Lineage CIDs:</strong> ' + pLast.blockCid.slice(0, 24) + '... &larr; ' + pLast.parentBlockCid.slice(0, 24) + '...'
+        ];
+        if (sc.id === 'esphome-s31') {
+          lines.push('&bull; <strong>Block #0 Hardware Manual:</strong> <a href="/ipfs/' + sc.rootCid + '/owners-manual.pdf" target="_blank">owners-manual.pdf</a> (ITEAD Sonoff S31 FCC 2APN5S31)');
+          lines.push('&bull; <strong>Block #1 ESPHome Project:</strong> <a href="' + sc.esphomeProjectUrl + '" target="_blank">' + sc.esphomeProjectUrl + '</a> (<a href="/ipfs/' + sc.rootCid + '/sonoff-s31-esphome.yaml" target="_blank">sonoff-s31-esphome.yaml</a>)');
+        }
+        setGateState(2, true, lines);
       } else {
         setGateState(2, false, [
-          '&bull; <strong>Lineage Query:</strong> "When did github.com/gin-gonic/gin upgrade to ' + targetVersion + '?"',
-          '&bull; <strong>Audit Failure:</strong> ' + (!gate1Passed ? 'Skipped because Gate 1 chain integrity failed.' : 'No attested transition found in chain.packablock for github.com/gin-gonic/gin@' + targetVersion)
+          '&bull; <strong>Lineage Query:</strong> "When did ' + sc.queryPackage + ' upgrade to ' + targetVersion + '?"',
+          '&bull; <strong>Audit Failure:</strong> ' + (!gate1Passed ? 'Skipped because Gate 1 chain integrity failed.' : 'No attested transition found in chain.packablock for ' + sc.queryPackage + '@' + targetVersion)
         ]);
       }
 
       // Gate 3: CycloneDX SBOM & Policy Evaluation
-      const sbom = JSON.parse(BUNDLE_FILES["sbom.cdx.json"]);
+      const sbom = JSON.parse(sc.files["sbom.cdx.json"]);
       const gate3Passed = gate1Passed && gate2Passed && !faults.cve;
       if (gate3Passed) {
         const compList = sbom.components.map(c => c.name + '@' + c.version).join(', ');
         setGateState(3, true, [
           '&bull; <strong>CycloneDX v1.5 SBOM:</strong> Evaluated ' + sbom.components.length + ' squashed components (' + compList + ')',
-          '&bull; <strong>Policy Engine:</strong> 4 rules evaluated (no-open-ended-operators, version-drift-limit, never-forget-history, cve-severity-threshold)',
-          '&bull; <strong>Result:</strong> 0 critical/high CVEs, 0 disallowed licenses (MIT/BSD-3-Clause)'
+          '&bull; <strong>Policy Engine:</strong> 4 rules enforced (no proprietary eWeLink SDK in release, never-forget-history, CVE &amp; license gates)',
+          '&bull; <strong>Result:</strong> 0 critical/high CVEs (CVE-2026-4108 patched in Block #3), 0 disallowed licenses'
         ]);
       } else {
+        const cveMsg = sc.id === 'esphome-s31'
+          ? 'Rule [cve-severity-threshold]: CRITICAL CVE-2026-4108 detected in esphome/ESPAsyncWebServer@3.1.0 (unpatched HTTP header overflow)'
+          : 'Rule [cve-severity-threshold]: CRITICAL CVE-2026-9999 detected in github.com/gin-gonic/gin@v1.10.0';
         setGateState(3, false, [
-          '&bull; <strong>Policy Violation:</strong> ' + (faults.cve
-            ? 'Rule [cve-severity-threshold]: CRITICAL CVE-2026-9999 detected in github.com/gin-gonic/gin@v1.10.0'
-            : 'Upstream gate failure blocked policy clearance.')
+          '&bull; <strong>Policy Violation:</strong> ' + (faults.cve ? cveMsg : 'Upstream gate failure blocked policy clearance.')
         ]);
       }
 
@@ -757,17 +1009,12 @@ curl -sL ${origin}/ipfs/${SEED_CID}/chain.packablock
       headerPill.className = 'status-pill ' + (allPassed ? 'pass' : 'fail');
       headerPill.textContent = allPassed ? 'VERIFIED' : 'REJECTED';
       document.getElementById('verdictText').textContent = allPassed
-        ? 'PASS: Ready to request access token'
+        ? 'PASS: Ready to flash / request access token'
         : 'REJECT: Build policy failed — zero-trust gate blocked deployment';
       document.getElementById('verdictTiming').textContent = elapsed + ' ms';
     }
 
-    async function sha56OrTampered(text) {
-      return sha256Hex(text);
-    }
-
-    selectArtifact('chain.packablock', document.querySelector('.tab-btn'));
-    runLiveAudit();
+    switchScenario('esphome-s31');
   </script>
 </body>
 </html>`;

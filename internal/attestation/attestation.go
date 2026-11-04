@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -184,15 +185,25 @@ type W3CVerifiableCredential struct {
 	Proof             map[string]string      `json:"proof"`
 }
 
+// AttachedArtifactDescriptor binds an extra artifact file (e.g. owners-manual.pdf, sonoff-s31-esphome.yaml)
+// into the signed in-toto SquashPredicate with its SHA-256 and IPFS raw leaf CID.
+type AttachedArtifactDescriptor struct {
+	Name   string `json:"name"`
+	SHA256 string `json:"sha256"`
+	CID    string `json:"cid"`
+	Size   int64  `json:"size"`
+}
+
 // SquashPredicate is the predicate payload inside the in-toto Statement v1.
 type SquashPredicate struct {
-	OutputTag            string                  `json:"outputTag"`
-	FlattenedLayerDigest string                  `json:"flattenedLayerDigest"`
-	IssuerDID            string                  `json:"issuerDid"`
-	Timestamp            string                  `json:"timestamp"`
-	SquashedLineage      SquashedLineage         `json:"squashedLineage"`
-	VerificationSummary  VSASummary              `json:"verificationSummary"`
-	VerifiableCredential W3CVerifiableCredential `json:"verifiableCredential"`
+	OutputTag            string                       `json:"outputTag"`
+	FlattenedLayerDigest string                       `json:"flattenedLayerDigest"`
+	IssuerDID            string                       `json:"issuerDid"`
+	Timestamp            string                       `json:"timestamp"`
+	AttachedArtifacts    []AttachedArtifactDescriptor `json:"attachedArtifacts,omitempty"`
+	SquashedLineage      SquashedLineage              `json:"squashedLineage"`
+	VerificationSummary  VSASummary                   `json:"verificationSummary"`
+	VerifiableCredential W3CVerifiableCredential      `json:"verifiableCredential"`
 }
 
 // InTotoStatement is an in-toto Statement v1 (`https://in-toto.io/Statement/v1`).
@@ -230,6 +241,7 @@ func BuildSquashAttestation(
 	flattenedSize int64,
 	blocks []chain.BlockPair,
 	km *TestKeyMaterial,
+	extraMaps ...map[string][]byte,
 ) (*SubjectDescriptor, *InTotoStatement, *DSSEEnvelope, error) {
 	rawHex := strings.TrimPrefix(flattenedDigest, "sha256:")
 	subj := SubjectDescriptor{
@@ -239,6 +251,24 @@ func BuildSquashAttestation(
 		},
 		MediaType: "application/vnd.oci.image.layer.v1.tar+gzip",
 		Size:      flattenedSize,
+	}
+
+	var attached []AttachedArtifactDescriptor
+	for _, m := range extraMaps {
+		names := make([]string, 0, len(m))
+		for name := range m {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+		for _, name := range names {
+			content := m[name]
+			attached = append(attached, AttachedArtifactDescriptor{
+				Name:   name,
+				SHA256: chain.SHA256Hex(string(content)),
+				CID:    chain.ComputeCIDv1Raw(content),
+				Size:   int64(len(content)),
+			})
+		}
 	}
 
 	precursors := make([]PrecursorNode, 0, len(blocks))
@@ -322,6 +352,7 @@ func BuildSquashAttestation(
 			FlattenedLayerDigest: flattenedDigest,
 			IssuerDID:            km.DID,
 			Timestamp:            now,
+			AttachedArtifacts:    attached,
 			SquashedLineage: SquashedLineage{
 				LayerCount:       len(blocks),
 				TerminalMetaHash: terminalMetaHash,

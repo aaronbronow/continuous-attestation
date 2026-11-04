@@ -1,4 +1,14 @@
-import { SEED_CID, SEED_DIGEST, SEED_LABEL, SEED_RELEASE } from "./seed";
+import {
+	ALL_RELEASES,
+	ESPHOME_CID,
+	ESPHOME_DIGEST,
+	ESPHOME_LABEL,
+	ESPHOME_RELEASE,
+	SEED_CID,
+	SEED_DIGEST,
+	SEED_LABEL,
+	SEED_RELEASE,
+} from "./seed";
 import { renderLandingPage } from "./ui";
 
 export interface Env {
@@ -13,8 +23,11 @@ const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const memoryStore = new Map<string, { body: Uint8Array; contentType: string }>();
 
 function detectContentType(filename: string): string {
-	if (filename === "chain.packablock" || filename.endsWith(".yaml")) {
+	if (filename === "chain.packablock") {
 		return "application/vnd.packablock.manifest-chain+yaml; charset=utf-8";
+	}
+	if (filename.endsWith(".yaml") || filename.endsWith(".yml")) {
+		return "text/yaml; charset=utf-8";
 	}
 	if (filename === "attestation.dsse.json") {
 		return "application/vnd.in-toto+json";
@@ -67,17 +80,23 @@ export default {
 		}
 
 		if (request.method === "GET" && path === "/api/dnslink") {
-			const digest = url.searchParams.get("digest") || SEED_DIGEST;
-			const label = url.searchParams.get("label") || SEED_LABEL;
+			const qDigest = url.searchParams.get("digest") || "";
+			const qLabel = url.searchParams.get("label") || "";
+			const isGoScenario = qDigest === SEED_DIGEST || qLabel === SEED_LABEL;
+
+			const digest = isGoScenario ? SEED_DIGEST : qDigest || ESPHOME_DIGEST;
+			const label = isGoScenario ? SEED_LABEL : qLabel || ESPHOME_LABEL;
+			const cid = isGoScenario ? SEED_CID : ESPHOME_CID;
+
 			return new Response(
 				JSON.stringify(
 					{
 						digest,
 						base32Label: label,
 						fqdn: `_dnslink.${label}.layers.packablock.com`,
-						txt: `dnslink=/ipfs/${SEED_CID}`,
-						cid: SEED_CID,
-						gatewayUrl: `${origin}/ipfs/${SEED_CID}/`,
+						txt: `dnslink=/ipfs/${cid}`,
+						cid,
+						gatewayUrl: `${origin}/ipfs/${cid}/`,
 					},
 					null,
 					2
@@ -93,7 +112,7 @@ export default {
 		}
 
 		if (request.method === "GET" && path === "/api/releases") {
-			return new Response(JSON.stringify({ releases: [SEED_RELEASE] }, null, 2), {
+			return new Response(JSON.stringify({ releases: [ESPHOME_RELEASE, SEED_RELEASE] }, null, 2), {
 				status: 200,
 				headers: {
 					"Content-Type": "application/json; charset=utf-8",
@@ -185,7 +204,7 @@ export default {
 			}
 		}
 
-		// Check in-memory store or built-in seed release bundle (`bafybeide5ligei4pht5cl2t4zsqf2bul2edlwhvpmc4uacsfupxod7uute`)
+		// Check in-memory store or built-in seed release bundles
 		const memObj = memoryStore.get(r2Key);
 		if (memObj) {
 			return new Response(memObj.body, {
@@ -199,19 +218,20 @@ export default {
 			});
 		}
 
-		if (cid === SEED_CID) {
+		const builtinRelease = ALL_RELEASES[cid];
+		if (builtinRelease) {
 			const targetFile = subpath || "subject.json";
 			if (wantsCAR && !subpath) {
 				const carText = JSON.stringify({
 					version: 1,
-					roots: [SEED_CID],
-					files: SEED_RELEASE.files,
+					roots: [cid],
+					files: builtinRelease.files,
 				});
 				return new Response(carText, {
 					status: 200,
 					headers: {
 						"Content-Type": "application/vnd.ipld.car",
-						"Content-Disposition": `attachment; filename="${SEED_CID}.car"`,
+						"Content-Disposition": `attachment; filename="${cid}.car"`,
 						"Cache-Control": IMMUTABLE_CACHE_CONTROL,
 						"X-Ipfs-Path": path,
 						"Access-Control-Allow-Origin": "*",
@@ -219,16 +239,20 @@ export default {
 				});
 			}
 
-			const seedContent = SEED_RELEASE.files[targetFile];
+			const seedContent = builtinRelease.files[targetFile];
 			if (seedContent !== undefined) {
+				const headers: Record<string, string> = {
+					"Content-Type": detectContentType(targetFile),
+					"Cache-Control": IMMUTABLE_CACHE_CONTROL,
+					"X-Ipfs-Path": path,
+					"Access-Control-Allow-Origin": "*",
+				};
+				if (targetFile.endsWith(".pdf")) {
+					headers["Content-Disposition"] = `inline; filename="${targetFile}"`;
+				}
 				const response = new Response(seedContent, {
 					status: 200,
-					headers: {
-						"Content-Type": detectContentType(targetFile),
-						"Cache-Control": IMMUTABLE_CACHE_CONTROL,
-						"X-Ipfs-Path": path,
-						"Access-Control-Allow-Origin": "*",
-					},
+					headers,
 				});
 				ctx.waitUntil(cache.put(request, response.clone()));
 				return response;

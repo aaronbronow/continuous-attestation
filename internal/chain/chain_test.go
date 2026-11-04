@@ -271,3 +271,110 @@ func TestEndToEndLifecycleUnit(t *testing.T) {
 		t.Fatalf("expected policy evaluation to pass: %v / %+v", err, polRes)
 	}
 }
+
+func TestESPHomeS31FiveBlockLifecycle(t *testing.T) {
+	tmpDir := t.TempDir()
+	chainPath := filepath.Join(tmpDir, "packablock.yaml")
+	layersDir := filepath.Join(tmpDir, "layers")
+	carPath := filepath.Join(tmpDir, "esphome-bundle.car")
+
+	km, err := attestation.LoadKeyMaterial(filepath.Join("..", "..", "test", "fixtures", "ed25519.key.json"))
+	if err != nil {
+		t.Fatalf("failed to load test key: %v", err)
+	}
+
+	manualPath := filepath.Join("..", "..", "examples", "esphome-s31", "owners-manual.pdf")
+	yamlPath := filepath.Join("..", "..", "examples", "esphome-s31", "sonoff-s31-esphome.yaml")
+
+	if err := chain.WriteESPHomeS31DemoChain(chainPath, manualPath, yamlPath, km.PrivateKey, km.DID, km.SignerIdentity); err != nil {
+		t.Fatalf("WriteESPHomeS31DemoChain failed: %v", err)
+	}
+
+	rep, err := chain.VerifyChain(chainPath, km.PublicKey)
+	if err != nil || !rep.Valid {
+		t.Fatalf("VerifyChain failed on ESPHome S31 chain: %v / %+v", err, rep)
+	}
+	if len(rep.Blocks) != 5 {
+		t.Fatalf("expected 5 blocks in Sonoff S31 ESPHome chain, got %d", len(rep.Blocks))
+	}
+	if rep.MetaHash != "72da938cfb25373a289f4f9c67d868d6224d4602debd509ada66da087c34daa2" {
+		t.Fatalf("unexpected terminal meta_hash: %s", rep.MetaHash)
+	}
+
+	allTransitions := chain.FindTransitions(rep.Blocks, "esphome/esphome", "")
+	if len(allTransitions) != 4 {
+		t.Fatalf("expected 4 firmware transitions for esphome/esphome across blocks #1..#4, got %d", len(allTransitions))
+	}
+	latestTransition := chain.FindTransitions(rep.Blocks, "esphome/esphome", "2026.10.3")
+	if len(latestTransition) != 1 || latestTransition[0].BlockIndex != 4 {
+		t.Fatalf("expected Block #4 transition to 2026.10.3, got %+v", latestTransition)
+	}
+	if len(rep.Blocks[1].Meta.Properties) == 0 || rep.Blocks[1].Meta.Properties[0].Value != "https://devices.esphome.io/devices/Sonoff-S31" {
+		t.Fatalf("expected Block #1 to carry esphome_project_url property, got %+v", rep.Blocks[1].Meta.Properties)
+	}
+
+	pkgs := chain.ReconstructLatestPackages(rep.Blocks)
+	if pkgs["esphome/esphome"] != "2026.10.3" {
+		t.Fatalf("expected final esphome/esphome version 2026.10.3, got %s", pkgs["esphome/esphome"])
+	}
+
+	flattened, _, err := oci.SquashLayers(layersDir, 4, "sonoff-s31-esphome:2026.10.3", pkgs)
+	if err != nil {
+		t.Fatalf("SquashLayers failed: %v", err)
+	}
+
+	manualBytes, err := os.ReadFile(manualPath)
+	if err != nil {
+		t.Fatalf("failed to read owners-manual.pdf: %v", err)
+	}
+	yamlBytes, err := os.ReadFile(yamlPath)
+	if err != nil {
+		t.Fatalf("failed to read sonoff-s31-esphome.yaml: %v", err)
+	}
+
+	extraFiles := map[string][]byte{
+		"owners-manual.pdf":       manualBytes,
+		"sonoff-s31-esphome.yaml": yamlBytes,
+	}
+	subj, _, dsseEnv, err := attestation.BuildSquashAttestation("sonoff-s31-esphome:2026.10.3", flattened.Digest, flattened.Size, rep.Blocks, km, extraFiles)
+	if err != nil {
+		t.Fatalf("BuildSquashAttestation with extraFiles failed: %v", err)
+	}
+
+	stmt, _, err := attestation.VerifyDSSEAndSubject(dsseEnv, flattened.Digest)
+	if err != nil {
+		t.Fatalf("VerifyDSSEAndSubject failed: %v", err)
+	}
+	if len(stmt.Predicate.AttachedArtifacts) != 2 {
+		t.Fatalf("expected 2 attached artifacts in DSSE statement, got %d", len(stmt.Predicate.AttachedArtifacts))
+	}
+
+	sbomBytes, err := oci.GenerateCycloneDXSBOM("sonoff-s31-esphome:2026.10.3", flattened.Digest, pkgs)
+	if err != nil {
+		t.Fatalf("GenerateCycloneDXSBOM failed: %v", err)
+	}
+	chainRaw, _ := os.ReadFile(chainPath)
+	bundle := &ipfs.BundleFiles{
+		SubjectJSON:     []byte(`{"name":"` + subj.Name + `"}`),
+		ChainPackablock: chainRaw,
+		SBOMCDXJSON:     sbomBytes,
+		AttestationDSSE: []byte(`{}`),
+		ExtraArtifacts:  extraFiles,
+	}
+	_, leafCIDs, err := ipfs.WriteCARv1(carPath, bundle)
+	if err != nil {
+		t.Fatalf("WriteCARv1 failed: %v", err)
+	}
+	if leafCIDs["owners-manual.pdf"] == "" || leafCIDs["sonoff-s31-esphome.yaml"] == "" {
+		t.Fatalf("expected CARv1 leaf CIDs for attached artifacts, got %+v", leafCIDs)
+	}
+
+	polDoc, err := policy.LoadPolicy(filepath.Join("..", "..", "examples", "esphome-s31", "packablock.policy.yaml"))
+	if err != nil {
+		t.Fatalf("LoadPolicy failed: %v", err)
+	}
+	polRes, err := policy.EvaluateSBOMAndChain(sbomBytes, string(chainRaw), polDoc, false)
+	if err != nil || !polRes.Passed {
+		t.Fatalf("expected Sonoff S31 ESPHome policy evaluation to pass: %v / %+v", err, polRes)
+	}
+}

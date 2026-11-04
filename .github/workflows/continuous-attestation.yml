@@ -53,6 +53,23 @@ jobs:
             echo "Verified: Gate 3 properly rejected simulated CVE-2026-9999"
           fi
 
+      - name: Step 6 — Verify Sonoff S31 ESPHome 5-Block Firmware Lifecycle (Proprietary -> UART -> 3x Home Assistant OTA)
+        run: |
+          ./bin/pkaput check examples/esphome-s31/packablock.yaml
+          ./bin/pkaput squash-release \
+            --chain examples/esphome-s31/packablock.yaml \
+            --layers 4 \
+            --output-tag "sonoff-s31-esphome:2026.10.3" \
+            --attach "examples/esphome-s31/owners-manual.pdf,examples/esphome-s31/sonoff-s31-esphome.yaml" \
+            --storage local
+          ./bin/pkaput publish-dns --domain "layers.example.internal" --provider coredns
+          ./bin/pkaput preflight-gate \
+            --file bin/layers/flattened.tar.gz \
+            --domain "layers.example.internal" \
+            --policy examples/esphome-s31/packablock.policy.yaml \
+            --query-pkg "esphome/esphome" \
+            --query-version "2026.10.3"
+
       - name: Upload CARv1 Release Bundle & Attestation Artifacts
         uses: actions/upload-artifact@v4
         with:

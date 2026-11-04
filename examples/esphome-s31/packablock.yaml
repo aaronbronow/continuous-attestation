@@ -1,0 +1,251 @@
+device: "ITEAD Sonoff S31 Smart Plug (ESP8266EX + CSE7766)"
+fcc_id: "2APN5S31"
+event: "factory_oem_baseline"
+reason: "Factory proprietary eWeLink v2.6.1 firmware baseline prior to open-source UART liberation"
+lockfiles:
+  platformio.lock.json:
+    chain_event: init
+    packages:
+      - itead/ewelink-oem-firmware: "2.6.1"
+      - espressif/esp8266-nonos-sdk: "2.2.1"
+---
+$yaml-chain-meta:
+    version: 1.0.0
+    block_index: 0
+    timestamp: "2026-07-14T18:10:00.000Z"
+    hashing_strategy: raw
+    data_hash: 0fbb48a28faeafa74935f60dcf7df3e5280e037b1c77e848d15a124bbb9af4f1
+    prev_meta_hash: "0000000000000000000000000000000000000000000000000000000000000000"
+    meta_hash: eb629fb292c853f73c8c6f3095b4988ca7d10cec20b751af920f63cb5037fc22
+    parent_block_cid: bafkreiaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    block_cid: bafkreibuwc4ncjh2qylss7k4jtcblrwtorgewtbx7ofyx37ylx2ynx3ney
+    layer_digest: sha256:50a97acafd7bef3c700d563eff602e10bf1fb909d4637e5f541534c9c9c12ae5
+    signature_auth:
+        provider: did:key/ed25519
+        signer_identity: release-bot@packablock.com
+        did: did:key:z6MktwupdmLXVVqTzCw4i46r4uGyosGXRnR3XjN4Zq7oMMsw
+        commit: oem-factory-261
+        git_signature: |-
+            -----BEGIN SSH SIGNATURE-----
+            JLfkWW7/GgkAt8J84Z6J7hiiIS2t5I/bv2yX7DmpJ1g+m/RwjtCZo2lzEDIcRokleFNleVBp3AVbbgpXX2qfBw==
+            -----END SSH SIGNATURE-----
+    properties:
+        - name: owners_manual_pdf
+          value: ITEAD Sonoff S31 Owner's Manual & Hardware UART Pinout Specification
+          filename: owners-manual.pdf
+          sha256: fa1d85bb44ae5a385ab563015207275950de76b0607e4a5dafba5bfcd556cf85
+          cid: bafkreih2dwc3wrfoli4fvnldafjaoj2zkdphnmdapzff3l52lp6nkvwpqu
+---
+device: "ITEAD Sonoff S31 Smart Plug (ESP8266EX + CSE7766)"
+event: "uart_liberation_flash"
+flash_method: "serial-uart-3v3-ftdi-j1"
+esphome_project_url: "https://devices.esphome.io/devices/Sonoff-S31"
+reason: "Flashed from proprietary eWeLink v2.6.1 to open-source ESPHome 2026.7.0 (3 versions back) via 3.3V UART J1 header"
+changes:
+  upgraded:
+    - name: esphome/esphome
+      from: "itead-oem-2.6.1"
+      to: "2026.7.0"
+lockfiles:
+  platformio.lock.json:
+    packages:
+      - itead/ewelink-oem-firmware:
+          - old: "2.6.1"
+          - msg: "removed"
+      - espressif/esp8266-nonos-sdk:
+          - old: "2.2.1"
+          - msg: "removed"
+      - esphome/esphome:
+          - old: "none"
+          - new: "2026.7.0"
+          - loc: "14,5"
+      - platformio/espressif8266:
+          - old: "none"
+          - new: "4.2.0"
+          - loc: "22,5"
+      - esphome/ESPAsyncWebServer:
+          - old: "none"
+          - new: "3.1.0"
+          - loc: "31,5"
+      - esphome/noise-c:
+          - old: "none"
+          - new: "0.1.9"
+          - loc: "39,5"
+      - lwip/lwip-esp8266:
+          - old: "none"
+          - new: "2.1.2"
+          - loc: "47,5"
+---
+$yaml-chain-meta:
+    version: 1.0.0
+    block_index: 1
+    timestamp: "2026-07-15T02:42:11.000Z"
+    hashing_strategy: raw
+    data_hash: e29ed42318ada115182ceeab7886f87bb0e8daca666b030607959ac6f9a54262
+    prev_meta_hash: eb629fb292c853f73c8c6f3095b4988ca7d10cec20b751af920f63cb5037fc22
+    meta_hash: 30c7e98ff51f6a4b4b4b13dea5c4f5d43892e87306d6de9b83d0f99ca0b86ea6
+    parent_block_cid: bafkreibuwc4ncjh2qylss7k4jtcblrwtorgewtbx7ofyx37ylx2ynx3ney
+    block_cid: bafkreigkggyjgb2rm6pl3a6pds5b2w6pump3jheinyzjgrkdv57fyhc2iy
+    layer_digest: sha256:991199ea55633dd803ecc0aef74d3206ef3ddcebf565b6f4bc41a1d511d7dad5
+    signature_auth:
+        provider: did:key/ed25519
+        signer_identity: release-bot@packablock.com
+        did: did:key:z6MktwupdmLXVVqTzCw4i46r4uGyosGXRnR3XjN4Zq7oMMsw
+        commit: 7a1c09e
+        git_signature: |-
+            -----BEGIN SSH SIGNATURE-----
+            9dKKIwgkQTbO9EeTrxSHJOgnq2rnXoKoqXJ+Nv582oN6oAMzpp/ptjzVz59bJT+s4+ycLLVDrTVUrcTBZ/UKBw==
+            -----END SSH SIGNATURE-----
+    properties:
+        - name: esphome_project_url
+          value: https://devices.esphome.io/devices/Sonoff-S31
+        - name: esphome_device_config
+          value: Exact ESPHome YAML configuration flashed to Sonoff S31 (CSE7766 UART 4800 baud + GPIO12 relay)
+          filename: sonoff-s31-esphome.yaml
+          sha256: 21ce13d3637888a97c64f196f08afb7dd278e02d1dd8e129a109edfc4d8b7530
+          cid: bafkreibbzyj5gy3yrcuxyzhrs3yiv6352j4oali53dqstiij5x6e3c3vga
+---
+device: "ITEAD Sonoff S31 Smart Plug (ESP8266EX + CSE7766)"
+event: "ha_esphome_ota_update"
+ota_index: 1
+controller: "Home Assistant ESPHome Add-on (ota v2)"
+reason: "Home Assistant OTA #1: Upgrade ESPHome 2026.7.0 -> 2026.8.2 and patch lwIP Wi-Fi beacon stability"
+changes:
+  upgraded:
+    - name: esphome/esphome
+      from: "2026.7.0"
+      to: "2026.8.2"
+    - name: lwip/lwip-esp8266
+      from: "2.1.2"
+      to: "2.1.3-patch1"
+lockfiles:
+  platformio.lock.json:
+    packages:
+      - esphome/esphome:
+          - old: "2026.7.0"
+          - new: "2026.8.2"
+          - loc: "14,5"
+      - lwip/lwip-esp8266:
+          - old: "2.1.2"
+          - new: "2.1.3-patch1"
+          - loc: "47,5"
+---
+$yaml-chain-meta:
+    version: 1.0.0
+    block_index: 2
+    timestamp: "2026-08-19T09:15:30.000Z"
+    hashing_strategy: raw
+    data_hash: 29e8e7b239f7e0c953c564152920a337035449a24303f14139fd6208a6549838
+    prev_meta_hash: 30c7e98ff51f6a4b4b4b13dea5c4f5d43892e87306d6de9b83d0f99ca0b86ea6
+    meta_hash: b25c361d4a9412c30532209ba2bd3d1b90419b556f7c0925b5f20c377c9354c0
+    parent_block_cid: bafkreigkggyjgb2rm6pl3a6pds5b2w6pump3jheinyzjgrkdv57fyhc2iy
+    block_cid: bafkreigfwimvkli2nhbfmjsbicwmrbwcxf5262nfuo443k2tgvhbbgvh5y
+    layer_digest: sha256:5174e2d17536bd85dd8206a288c8248604abd7747520f2af0736274789f82c0d
+    signature_auth:
+        provider: did:key/ed25519
+        signer_identity: release-bot@packablock.com
+        did: did:key:z6MktwupdmLXVVqTzCw4i46r4uGyosGXRnR3XjN4Zq7oMMsw
+        commit: b34e812
+        git_signature: |-
+            -----BEGIN SSH SIGNATURE-----
+            +a7Q3C5FiKERCwMt+QCEzkbQYtGy78az7Cu4HiD1+f2cESfg+OJ4uxf6zcgEDMQDupSmza8d/DKMN6S4mw2dBg==
+            -----END SSH SIGNATURE-----
+---
+device: "ITEAD Sonoff S31 Smart Plug (ESP8266EX + CSE7766)"
+event: "ha_esphome_ota_update"
+ota_index: 2
+controller: "Home Assistant ESPHome Add-on (ota v2)"
+reason: "Home Assistant OTA #2: Upgrade ESPHome 2026.8.2 -> 2026.9.1 and remediate ESPAsyncWebServer CVE-2026-4108"
+changes:
+  upgraded:
+    - name: esphome/esphome
+      from: "2026.8.2"
+      to: "2026.9.1"
+    - name: esphome/ESPAsyncWebServer
+      from: "3.1.0"
+      to: "3.3.2"
+    - name: platformio/espressif8266
+      from: "4.2.0"
+      to: "4.2.1"
+lockfiles:
+  platformio.lock.json:
+    packages:
+      - esphome/esphome:
+          - old: "2026.8.2"
+          - new: "2026.9.1"
+          - loc: "14,5"
+      - esphome/ESPAsyncWebServer:
+          - old: "3.1.0"
+          - new: "3.3.2"
+          - loc: "31,5"
+      - platformio/espressif8266:
+          - old: "4.2.0"
+          - new: "4.2.1"
+          - loc: "22,5"
+---
+$yaml-chain-meta:
+    version: 1.0.0
+    block_index: 3
+    timestamp: "2026-09-23T14:04:09.000Z"
+    hashing_strategy: raw
+    data_hash: 15b032759c85e2278c4a468b97820fe414ea2fb04c7bfe0f36784e665da57bc9
+    prev_meta_hash: b25c361d4a9412c30532209ba2bd3d1b90419b556f7c0925b5f20c377c9354c0
+    meta_hash: 51bc724abd889d44532573d4889ea81f0b8cb7bd9f32598da8275cf523edf498
+    parent_block_cid: bafkreigfwimvkli2nhbfmjsbicwmrbwcxf5262nfuo443k2tgvhbbgvh5y
+    block_cid: bafkreicullikawoxvtd4owpstl24hor2x4vmva6aqxhonlx3awcu4sat5i
+    layer_digest: sha256:57b7e8d00e9df0805e29f2832d59f00abe06232f06120d880c5869c6fdbb7b10
+    signature_auth:
+        provider: did:key/ed25519
+        signer_identity: release-bot@packablock.com
+        did: did:key:z6MktwupdmLXVVqTzCw4i46r4uGyosGXRnR3XjN4Zq7oMMsw
+        commit: e904d5a
+        git_signature: |-
+            -----BEGIN SSH SIGNATURE-----
+            XSMv5GdMRTCu8JI+695kl+ZMWdvCIfOwP79rVibpuH0thgfjUzyvKfx1SLhZhHeGj2oEkqatUJsv+lSB/qXJCA==
+            -----END SSH SIGNATURE-----
+---
+device: "ITEAD Sonoff S31 Smart Plug (ESP8266EX + CSE7766)"
+event: "ha_esphome_ota_update"
+ota_index: 3
+controller: "Home Assistant ESPHome Add-on (ota v2)"
+reason: "Home Assistant OTA #3 (Present Day): Upgrade ESPHome 2026.9.1 -> 2026.10.3 with Noise API encryption rotation"
+changes:
+  upgraded:
+    - name: esphome/esphome
+      from: "2026.9.1"
+      to: "2026.10.3"
+    - name: esphome/noise-c
+      from: "0.1.9"
+      to: "0.1.10"
+lockfiles:
+  platformio.lock.json:
+    packages:
+      - esphome/esphome:
+          - old: "2026.9.1"
+          - new: "2026.10.3"
+          - loc: "14,5"
+      - esphome/noise-c:
+          - old: "0.1.9"
+          - new: "0.1.10"
+          - loc: "39,5"
+---
+$yaml-chain-meta:
+    version: 1.0.0
+    block_index: 4
+    timestamp: "2026-11-04T08:30:00.000Z"
+    hashing_strategy: raw
+    data_hash: 7ebf93d193b1b969fb2c8c9a59381ecbb6db8d266d1a0544139b7084aeb090a0
+    prev_meta_hash: 51bc724abd889d44532573d4889ea81f0b8cb7bd9f32598da8275cf523edf498
+    meta_hash: 72da938cfb25373a289f4f9c67d868d6224d4602debd509ada66da087c34daa2
+    parent_block_cid: bafkreicullikawoxvtd4owpstl24hor2x4vmva6aqxhonlx3awcu4sat5i
+    block_cid: bafkreif63wg55gogn6shwstjha6xxvhp2fwzpinddq7edosjpddn7rdmci
+    layer_digest: sha256:db619235295dab6a8620d24e88468ea8175a439ddff64c5b4996e9be25226adf
+    signature_auth:
+        provider: did:key/ed25519
+        signer_identity: release-bot@packablock.com
+        did: did:key:z6MktwupdmLXVVqTzCw4i46r4uGyosGXRnR3XjN4Zq7oMMsw
+        commit: f4129c8
+        git_signature: |-
+            -----BEGIN SSH SIGNATURE-----
+            RYzEVYV6G0ToEAPgDd1hJbxUpGi+YqDeDFty+CL9M7O8XdA//m50yOIz+DilEfbvcoR4V/Z2U1HNwE8+w/vVCA==
+            -----END SSH SIGNATURE-----

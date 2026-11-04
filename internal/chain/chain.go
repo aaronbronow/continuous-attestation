@@ -342,6 +342,21 @@ func writeBlock(
 	signerIdentity string,
 	props []PropertyAttachment,
 ) (*ChainMeta, error) {
+	ts := time.Now().UTC().Format("2006-01-02T15:04:05.000Z")
+	return writeBlockAtTimestamp(chainPath, dataPayload, layerDigest, commitSHA, ts, privKey, did, signerIdentity, props)
+}
+
+func writeBlockAtTimestamp(
+	chainPath string,
+	dataPayload string,
+	layerDigest string,
+	commitSHA string,
+	ts string,
+	privKey ed25519.PrivateKey,
+	did string,
+	signerIdentity string,
+	props []PropertyAttachment,
+) (*ChainMeta, error) {
 	cleanData := strings.TrimSpace(strings.ReplaceAll(dataPayload, "\r\n", "\n")) + "\n"
 	dataHash := SHA256Hex(strings.TrimSpace(cleanData))
 
@@ -369,7 +384,9 @@ func writeBlock(
 		}
 	}
 
-	ts := time.Now().UTC().Format("2006-01-02T15:04:05.000Z")
+	if ts == "" {
+		ts = time.Now().UTC().Format("2006-01-02T15:04:05.000Z")
+	}
 	sigAuth := SignBlockPayload(privKey, did, signerIdentity, commitSHA, dataHash, prevMetaHash)
 	blockCID := ComputeCIDv1Raw([]byte(fmt.Sprintf("%d:%s:%s:%s", nextIndex, dataHash, prevMetaHash, ts)))
 
@@ -754,4 +771,231 @@ func ReconstructLatestPackages(blocks []BlockPair) map[string]string {
 		pkgs["gopkg.in/yaml.v3"] = "v3.0.1"
 	}
 	return pkgs
+}
+
+// WriteESPHomeS31DemoChain builds the 5-block Sonoff S31 Continuous Attestation chain:
+//   - Block #0: Proprietary Factory Firmware (itead/ewelink-oem-firmware@2.6.1) + Owner's Manual PDF attachment
+//   - Block #1: Physical 3.3V UART Flash to ESPHome 2026.7.0 (3 versions back) + exact ESPHome project URL & YAML attachment
+//   - Block #2: Home Assistant ESPHome OTA #1 -> 2026.8.2 (lwIP beacon & ARP stability patch)
+//   - Block #3: Home Assistant ESPHome OTA #2 -> 2026.9.1 (ESPAsyncWebServer CVE-2026-4108 fix)
+//   - Block #4: Home Assistant ESPHome OTA #3 -> 2026.10.3 (Present-day Noise API key rotation & CSE7766 calibration)
+func WriteESPHomeS31DemoChain(
+	chainPath string,
+	manualPath string,
+	esphomeConfigPath string,
+	privKey ed25519.PrivateKey,
+	did string,
+	signerIdentity string,
+) error {
+	if err := os.MkdirAll(filepath.Dir(chainPath), 0755); err != nil && filepath.Dir(chainPath) != "." {
+		return err
+	}
+	_ = os.Remove(chainPath)
+
+	manualBytes, err := os.ReadFile(manualPath)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", manualPath, err)
+	}
+	esphomeCfgBytes, err := os.ReadFile(esphomeConfigPath)
+	if err != nil {
+		return fmt.Errorf("reading %s: %w", esphomeConfigPath, err)
+	}
+
+	type stepSpec struct {
+		ts      string
+		commit  string
+		layer   string
+		payload string
+		props   []PropertyAttachment
+	}
+
+	steps := []stepSpec{
+		{
+			ts:     "2026-07-14T18:10:00.000Z",
+			commit: "oem-factory-261",
+			layer:  "sha256:" + SHA256Hex("sonoff-s31-oem-factory-v2.6.1.bin"),
+			payload: `device: "ITEAD Sonoff S31 Smart Plug (ESP8266EX + CSE7766)"
+fcc_id: "2APN5S31"
+event: "factory_oem_baseline"
+reason: "Factory proprietary eWeLink v2.6.1 firmware baseline prior to open-source UART liberation"
+lockfiles:
+  platformio.lock.json:
+    chain_event: init
+    packages:
+      - itead/ewelink-oem-firmware: "2.6.1"
+      - espressif/esp8266-nonos-sdk: "2.2.1"
+`,
+			props: []PropertyAttachment{
+				{
+					Name:     "owners_manual_pdf",
+					Value:    "ITEAD Sonoff S31 Owner's Manual & Hardware UART Pinout Specification",
+					Filename: filepath.Base(manualPath),
+					SHA256:   SHA256Hex(string(manualBytes)),
+					CID:      ComputeCIDv1Raw(manualBytes),
+				},
+			},
+		},
+		{
+			ts:     "2026-07-15T02:42:11.000Z",
+			commit: "7a1c09e",
+			layer:  "sha256:" + SHA256Hex("sonoff-s31-esphome-2026.7.0-uart.bin"),
+			payload: `device: "ITEAD Sonoff S31 Smart Plug (ESP8266EX + CSE7766)"
+event: "uart_liberation_flash"
+flash_method: "serial-uart-3v3-ftdi-j1"
+esphome_project_url: "https://devices.esphome.io/devices/Sonoff-S31"
+reason: "Flashed from proprietary eWeLink v2.6.1 to open-source ESPHome 2026.7.0 (3 versions back) via 3.3V UART J1 header"
+changes:
+  upgraded:
+    - name: esphome/esphome
+      from: "itead-oem-2.6.1"
+      to: "2026.7.0"
+lockfiles:
+  platformio.lock.json:
+    packages:
+      - itead/ewelink-oem-firmware:
+          - old: "2.6.1"
+          - msg: "removed"
+      - espressif/esp8266-nonos-sdk:
+          - old: "2.2.1"
+          - msg: "removed"
+      - esphome/esphome:
+          - old: "none"
+          - new: "2026.7.0"
+          - loc: "14,5"
+      - platformio/espressif8266:
+          - old: "none"
+          - new: "4.2.0"
+          - loc: "22,5"
+      - esphome/ESPAsyncWebServer:
+          - old: "none"
+          - new: "3.1.0"
+          - loc: "31,5"
+      - esphome/noise-c:
+          - old: "none"
+          - new: "0.1.9"
+          - loc: "39,5"
+      - lwip/lwip-esp8266:
+          - old: "none"
+          - new: "2.1.2"
+          - loc: "47,5"
+`,
+			props: []PropertyAttachment{
+				{
+					Name:  "esphome_project_url",
+					Value: "https://devices.esphome.io/devices/Sonoff-S31",
+				},
+				{
+					Name:     "esphome_device_config",
+					Value:    "Exact ESPHome YAML configuration flashed to Sonoff S31 (CSE7766 UART 4800 baud + GPIO12 relay)",
+					Filename: filepath.Base(esphomeConfigPath),
+					SHA256:   SHA256Hex(string(esphomeCfgBytes)),
+					CID:      ComputeCIDv1Raw(esphomeCfgBytes),
+				},
+			},
+		},
+		{
+			ts:     "2026-08-19T09:15:30.000Z",
+			commit: "b34e812",
+			layer:  "sha256:" + SHA256Hex("sonoff-s31-esphome-2026.8.2-ota1.bin"),
+			payload: `device: "ITEAD Sonoff S31 Smart Plug (ESP8266EX + CSE7766)"
+event: "ha_esphome_ota_update"
+ota_index: 1
+controller: "Home Assistant ESPHome Add-on (ota v2)"
+reason: "Home Assistant OTA #1: Upgrade ESPHome 2026.7.0 -> 2026.8.2 and patch lwIP Wi-Fi beacon stability"
+changes:
+  upgraded:
+    - name: esphome/esphome
+      from: "2026.7.0"
+      to: "2026.8.2"
+    - name: lwip/lwip-esp8266
+      from: "2.1.2"
+      to: "2.1.3-patch1"
+lockfiles:
+  platformio.lock.json:
+    packages:
+      - esphome/esphome:
+          - old: "2026.7.0"
+          - new: "2026.8.2"
+          - loc: "14,5"
+      - lwip/lwip-esp8266:
+          - old: "2.1.2"
+          - new: "2.1.3-patch1"
+          - loc: "47,5"
+`,
+		},
+		{
+			ts:     "2026-09-23T14:04:09.000Z",
+			commit: "e904d5a",
+			layer:  "sha256:" + SHA256Hex("sonoff-s31-esphome-2026.9.1-ota2.bin"),
+			payload: `device: "ITEAD Sonoff S31 Smart Plug (ESP8266EX + CSE7766)"
+event: "ha_esphome_ota_update"
+ota_index: 2
+controller: "Home Assistant ESPHome Add-on (ota v2)"
+reason: "Home Assistant OTA #2: Upgrade ESPHome 2026.8.2 -> 2026.9.1 and remediate ESPAsyncWebServer CVE-2026-4108"
+changes:
+  upgraded:
+    - name: esphome/esphome
+      from: "2026.8.2"
+      to: "2026.9.1"
+    - name: esphome/ESPAsyncWebServer
+      from: "3.1.0"
+      to: "3.3.2"
+    - name: platformio/espressif8266
+      from: "4.2.0"
+      to: "4.2.1"
+lockfiles:
+  platformio.lock.json:
+    packages:
+      - esphome/esphome:
+          - old: "2026.8.2"
+          - new: "2026.9.1"
+          - loc: "14,5"
+      - esphome/ESPAsyncWebServer:
+          - old: "3.1.0"
+          - new: "3.3.2"
+          - loc: "31,5"
+      - platformio/espressif8266:
+          - old: "4.2.0"
+          - new: "4.2.1"
+          - loc: "22,5"
+`,
+		},
+		{
+			ts:     "2026-11-04T08:30:00.000Z",
+			commit: "f4129c8",
+			layer:  "sha256:" + SHA256Hex("sonoff-s31-esphome-2026.10.3-ota3.bin"),
+			payload: `device: "ITEAD Sonoff S31 Smart Plug (ESP8266EX + CSE7766)"
+event: "ha_esphome_ota_update"
+ota_index: 3
+controller: "Home Assistant ESPHome Add-on (ota v2)"
+reason: "Home Assistant OTA #3 (Present Day): Upgrade ESPHome 2026.9.1 -> 2026.10.3 with Noise API encryption rotation"
+changes:
+  upgraded:
+    - name: esphome/esphome
+      from: "2026.9.1"
+      to: "2026.10.3"
+    - name: esphome/noise-c
+      from: "0.1.9"
+      to: "0.1.10"
+lockfiles:
+  platformio.lock.json:
+    packages:
+      - esphome/esphome:
+          - old: "2026.9.1"
+          - new: "2026.10.3"
+          - loc: "14,5"
+      - esphome/noise-c:
+          - old: "0.1.9"
+          - new: "0.1.10"
+          - loc: "39,5"
+`,
+		},
+	}
+
+	for _, st := range steps {
+		if _, err := writeBlockAtTimestamp(chainPath, st.payload, st.layer, st.commit, st.ts, privKey, did, signerIdentity, st.props); err != nil {
+			return err
+		}
+	}
+	return nil
 }

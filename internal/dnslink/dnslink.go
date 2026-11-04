@@ -132,7 +132,7 @@ func ResolveDNSLinkTXT(dnsServerAddr, fqdn, fallbackZonePath string) (string, st
 	}
 
 	var lastErr error
-	for attempt := 0; attempt < 6; attempt++ {
+	for attempt := 0; attempt < 3; attempt++ {
 		txts, err := queryUDPTXT(dnsServerAddr, fqdn)
 		if err == nil {
 			for _, txt := range txts {
@@ -145,13 +145,20 @@ func ResolveDNSLinkTXT(dnsServerAddr, fqdn, fallbackZonePath string) (string, st
 			lastErr = fmt.Errorf("no dnslink=/ipfs/ TXT record found in response for %s", fqdn)
 		} else {
 			lastErr = err
+			if fallbackZonePath != "" {
+				break
+			}
 		}
-		time.Sleep(450 * time.Millisecond)
+		time.Sleep(250 * time.Millisecond)
 	}
 
 	// If CoreDNS container is not running or reloading, check local zone file for the exact recordHost
 	if fallbackZonePath != "" {
-		cleanHost := strings.Split(fqdn, ".layers.")[0]
+		labels := strings.Split(fqdn, ".")
+		cleanHost := labels[0]
+		if len(labels) >= 2 {
+			cleanHost = labels[0] + "." + labels[1]
+		}
 		if raw, err := os.ReadFile(fallbackZonePath); err == nil {
 			for _, line := range strings.Split(string(raw), "\n") {
 				line = strings.TrimSpace(line)

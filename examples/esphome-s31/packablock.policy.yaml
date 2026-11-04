@@ -1,0 +1,36 @@
+version: "v1"
+rules:
+  - name: "no-open-ended-operators"
+    level: "error"
+    target: "manifest"
+    selector:
+      ecosystems: ["platformio", "esphome", "golang", "npm"]
+    condition:
+      operator_is: [">=", "*"]
+      message: "Open-ended version operators (>=, *) are disallowed in firmware lockfiles."
+
+  - name: "never-forget-history"
+    level: "error"
+    target: "chain"
+    condition:
+      allow_forget: false
+      message: "Pruning factory OEM baseline or UART flash attestation history is blocked."
+
+  - name: "no-proprietary-cloud-sdk-in-release"
+    level: "error"
+    target: "package"
+    condition:
+      blocked_versions:
+        "itead/ewelink-oem-firmware": ["2.6.1", "2.6.0", "2.5.0"]
+      message: "Proprietary eWeLink cloud tether must not remain active in liberated ESPHome firmware."
+
+  - name: "cve-severity-threshold"
+    level: "error"
+    target: "package"
+    condition:
+      max_cve_severity: "HIGH"
+      disallowed_licenses: ["Proprietary-Closed", "AGPL-3.0-only"]
+      blocked_versions:
+        "esphome/ESPAsyncWebServer": ["3.1.0", "3.0.0"]
+        "esphome/esphome": ["2026.7.0-vuln", "2026.10.3-vuln"]
+      message: "Critical vulnerability (CVE-2026-4108 in ESPAsyncWebServer < 3.3.2) or disallowed license detected in firmware SBOM."

@@ -161,7 +161,7 @@ func PinBundleToKubo(apiBaseURL string, bundle *BundleFiles, cacheBaseDir string
 	}
 
 	addURL := fmt.Sprintf("%s/api/v0/add?wrap-with-directory=true&cid-version=1&pin=true&quieter=true", apiBaseURL)
-	client := &http.Client{Timeout: 8 * time.Second}
+	client := &http.Client{Timeout: 400 * time.Millisecond}
 	req, err := http.NewRequest(http.MethodPost, addURL, &body)
 	if err != nil {
 		return "", err
@@ -221,8 +221,12 @@ func FetchFileFromGateways(gateways []string, cid, filename, cacheBaseDir string
 		if gw == "" {
 			continue
 		}
+		reqClient := client
+		if strings.Contains(gw, "127.0.0.1") || strings.Contains(gw, "localhost") {
+			reqClient = &http.Client{Timeout: 350 * time.Millisecond}
+		}
 		fileURL := fmt.Sprintf("%s/ipfs/%s/%s", gw, cid, filename)
-		resp, err := client.Get(fileURL)
+		resp, err := reqClient.Get(fileURL)
 		if err == nil && resp.StatusCode == http.StatusOK {
 			data, readErr := io.ReadAll(resp.Body)
 			resp.Body.Close()
@@ -236,8 +240,9 @@ func FetchFileFromGateways(gateways []string, cid, filename, cacheBaseDir string
 	}
 
 	// Fallback to Kubo RPC `/api/v0/cat?arg=/ipfs/<CID>/<filename>` on port 5002
+	localClient := &http.Client{Timeout: 350 * time.Millisecond}
 	catURL := fmt.Sprintf("http://127.0.0.1:5002/api/v0/cat?arg=/ipfs/%s/%s", cid, filename)
-	if resp, err := client.Post(catURL, "application/json", nil); err == nil && resp.StatusCode == http.StatusOK {
+	if resp, err := localClient.Post(catURL, "application/json", nil); err == nil && resp.StatusCode == http.StatusOK {
 		data, readErr := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if readErr == nil {
