@@ -75,6 +75,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download CARv1 Release Bundle & Attestation Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: continuous-attestation-release-bundle
+          path: .
+
       - name: Build Static Site + Content-Addressed IPFS Gateway Tree
         run: node scripts/build-static-demo.mjs
 

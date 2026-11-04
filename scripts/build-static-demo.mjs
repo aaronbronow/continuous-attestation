@@ -27,7 +27,13 @@ for (const name of fileNames) {
 
 // Fallback extraction if running without prior build
 if (Object.keys(files).length < 4) {
-	files["chain.packablock"] = fs.readFileSync(path.resolve("packablock.yaml"), "utf8");
+	const filesBlockMatch = seedTs.match(/files:\s*(\{[\s\S]*?\})\s*\n\};/);
+	if (filesBlockMatch) {
+		const seedFiles = new Function(`return ${filesBlockMatch[1]};`)();
+		for (const [k, v] of Object.entries(seedFiles)) {
+			if (!files[k]) files[k] = v;
+		}
+	}
 }
 
 for (const [name, content] of Object.entries(files)) {
