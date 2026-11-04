@@ -22,6 +22,17 @@ By pairing **`pkablk`** with **`pkaput`**:
 3. **Registry-Agnostic Discovery (`RFC 4648 Base32 DNSLink`)**: `pkaput publish-dns` maps any squashed OCI layer `sha256:<hex>` digest to `_dnslink.<base32-digest>.<domain>` (`TXT "dnslink=/ipfs/<CID>"`), allowing any consumer to locate the attestation bundle via standard DNS.
 4. **Lazy Zero-Trust Pre-Flight Gate (`pkaput preflight-gate`)**: Consumers resolve the DNSLink record, lazily fetch `attestation.dsse.json` (`~2 KB`) before downloading the full SBOM, verify the Ed25519 signature and hash chain, audit exact version upgrade history, and enforce `packablock.policy.yaml`.
 
+### Persistence & Control Plane Comparison
+
+| Storage / Registry Model | Controlled By | Pros | Cons & Failure Modes |
+| :--- | :--- | :--- | :--- |
+| **1. Platform Transparency Log / OCI Registry** (`Rekor` / `ghcr.io`) | **Microsoft / GitHub / Platform Operator** | Turnkey CI/CD integration (GitHub Actions OIDC, Cosign); zero initial hosting setup. | Vendor lock-in and account suspension risk; squashing OCI layers destroys precursor diff history; tied to a single corporate control plane. |
+| **2. 3rd-Party Cloud Object Bucket** (`Amazon S3` / generic blob) | **Amazon (AWS) + Leased Billing Account** | Inexpensive raw blob storage; high uptime while the monthly cloud bill is paid. | Location-addressed URLs (`s3://bucket/key`) can be silently overwritten or deleted; if the publisher stops paying AWS, all downstream verification breaks. |
+| **3. 1st-Party Manufacturer Self-Hosted** (`OEM Portal` / private Harbor) | **100% Dependent on Manufacturer** | Full 1st-party control over proprietary release artifacts and hardware manuals. | Single point of failure: if the OEM EOLs the device (e.g., Sonoff S31), goes out of business, or blocks open-source ESPHome reflashing, provenance vanishes. |
+| **4. Centralized EU-Wide Registry** (Proposed EU CRA Central Portal) | **EU Regulator & Contracted Cloud Host** | Uniform regulatory schema across EU member states for Cyber Resilience Act (CRA) audits. | Centralized bureaucracy and high-value outage/attack target; still dependent on a contracted hosting provider; fragmented from non-EU open-source ecosystems. |
+| **5. Centralized State-Wide Registry** (State / National Gov Portal) | **State Government IT Agency** | Matches local public-sector procurement rules and state compliance mandates. | 50+ incompatible jurisdictional silos; fragile state IT uptime, appropriations cycles, and contractor turnover. |
+| **6. Continuous Attestation + `pkaput`** (`CARv1` + `IPFS` + `Base32 DNSLink`) | **Cryptographic Math (`CIDv1` + `W3C did:key`)** | **Content-Addressed & Mirror-Agnostic:** The signed 5-block `chain.packablock`, Anchore `syft` SBOM, `DSSE` statement, and PDF/YAML artifacts hash to a deterministic `bafybei...` CID. Pin simultaneously to R2, Storacha, GitHub Pages, an EU/State mirror, or a local LAN node—any surviving copy verifies identically. | Requires deterministic canonicalization of SBOM timestamps/UUIDs and a lightweight `_dnslink` TXT pointer (both automated by `pkaput squash-release` & `publish-dns`). |
+
 ---
 
 ## 1. Separation of Concerns: `pkablk` vs. `pkaput`

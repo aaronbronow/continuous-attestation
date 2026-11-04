@@ -527,6 +527,91 @@ export function renderLandingPage(origin: string): string {
     .cli-section {
       margin-top: 1.75rem;
     }
+
+    .comparison-section {
+      margin-top: 1.75rem;
+    }
+
+    .comp-table-wrap {
+      overflow-x: auto;
+    }
+
+    table.comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      text-align: left;
+    }
+
+    table.comp-table th,
+    table.comp-table td {
+      padding: 0.78rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.48;
+    }
+
+    table.comp-table th {
+      background: #0d120f;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    table.comp-table tr.our-solution {
+      background: rgba(52, 211, 153, 0.07);
+      border-top: 1px solid rgba(52, 211, 153, 0.35);
+      border-bottom: 1px solid rgba(52, 211, 153, 0.35);
+    }
+
+    table.comp-table tr.our-solution td {
+      color: var(--ink);
+    }
+
+    .model-name {
+      font-weight: 600;
+      color: var(--ink);
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+
+    .controller-tag {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.71rem;
+      padding: 0.14rem 0.45rem;
+      border-radius: 2px;
+      border: 1px solid var(--border-strong);
+      background: var(--surface-raised);
+      color: var(--muted);
+    }
+
+    .controller-tag.warn {
+      border-color: rgba(245, 158, 11, 0.35);
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .controller-tag.good {
+      border-color: rgba(52, 211, 153, 0.45);
+      color: var(--emerald);
+      background: var(--emerald-dim);
+    }
+
+    .pro-text {
+      color: #c7d6cd;
+    }
+
+    .con-text {
+      color: #d4a3a3;
+    }
+
+    tr.our-solution .pro-text {
+      color: #d1fae5;
+    }
   </style>
 </head>
 <body>
@@ -731,6 +816,120 @@ export function renderLandingPage(origin: string): string {
         <pre class="code-view" id="artifactContentPre"></pre>
       </section>
     </div>
+
+    <!-- Persistence & Sovereignty Pro/Con Comparison -->
+    <section class="panel comparison-section">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>Why Not a Traditional or Government Registry? — Persistence &amp; Control Plane Comparison</span>
+        </div>
+        <span style="font-family: var(--mono); font-size: 0.76rem; color: var(--emerald);">Zero Single-Operator Lock-In</span>
+      </div>
+      <div class="comp-table-wrap">
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th style="width: 22%;">Storage / Registry Model</th>
+              <th style="width: 18%;">Controlled By</th>
+              <th style="width: 28%;">Pros</th>
+              <th style="width: 32%;">Cons &amp; Failure Modes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <span class="model-name">1. Platform Transparency Log / OCI Registry</span>
+                <span style="font-family: var(--mono); font-size: 0.74rem; color: var(--muted);">Rekor / ghcr.io / ACR</span>
+              </td>
+              <td>
+                <span class="controller-tag warn">Microsoft / GitHub / Platform Operator</span>
+              </td>
+              <td class="pro-text">
+                Turnkey CI/CD integration (GitHub Actions OIDC, Cosign); zero initial hosting setup.
+              </td>
+              <td class="con-text">
+                Vendor lock-in and account suspension risk; squashing OCI layers destroys precursor diff history; tied to a single corporate control plane.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="model-name">2. 3rd-Party Cloud Object Bucket</span>
+                <span style="font-family: var(--mono); font-size: 0.74rem; color: var(--muted);">Amazon S3 / GCS Blob</span>
+              </td>
+              <td>
+                <span class="controller-tag warn">Amazon (AWS) + Leased Billing Account</span>
+              </td>
+              <td class="pro-text">
+                Inexpensive raw blob storage; high uptime while the monthly cloud bill is paid.
+              </td>
+              <td class="con-text">
+                Location-addressed URLs (<code style="font-family: var(--mono);">s3://bucket/key</code>) can be silently overwritten or deleted; if the publisher stops paying AWS, all downstream verification breaks.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="model-name">3. 1st-Party Manufacturer Self-Hosted</span>
+                <span style="font-family: var(--mono); font-size: 0.74rem; color: var(--muted);">OEM Portal / Private Harbor</span>
+              </td>
+              <td>
+                <span class="controller-tag warn">100% Dependent on Manufacturer</span>
+              </td>
+              <td class="pro-text">
+                Full 1st-party control over proprietary release artifacts and hardware manuals.
+              </td>
+              <td class="con-text">
+                Single point of failure: if the OEM EOLs the device (e.g., Sonoff S31), goes out of business, or blocks open-source ESPHome reflashing, provenance vanishes.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="model-name">4. Centralized EU-Wide Registry</span>
+                <span style="font-family: var(--mono); font-size: 0.74rem; color: var(--muted);">Proposed EU CRA Central Portal</span>
+              </td>
+              <td>
+                <span class="controller-tag warn">EU Regulator &amp; Contracted Cloud Host</span>
+              </td>
+              <td class="pro-text">
+                Uniform regulatory schema across EU member states for Cyber Resilience Act (CRA) audits.
+              </td>
+              <td class="con-text">
+                Centralized bureaucracy and high-value outage/attack target; still dependent on a contracted hosting provider; fragmented from non-EU open-source ecosystems.
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="model-name">5. Centralized State-Wide Registry</span>
+                <span style="font-family: var(--mono); font-size: 0.74rem; color: var(--muted);">State / National Gov Portal</span>
+              </td>
+              <td>
+                <span class="controller-tag warn">State Government IT Agency</span>
+              </td>
+              <td class="pro-text">
+                Matches local public-sector procurement rules and state compliance mandates.
+              </td>
+              <td class="con-text">
+                50+ incompatible jurisdictional silos; fragile state IT uptime, appropriations cycles, and contractor turnover.
+              </td>
+            </tr>
+            <tr class="our-solution">
+              <td>
+                <span class="model-name" style="color: var(--emerald);">6. Continuous Attestation + pkaput</span>
+                <span style="font-family: var(--mono); font-size: 0.74rem; color: var(--emerald);">CARv1 + IPFS + Base32 DNSLink</span>
+              </td>
+              <td>
+                <span class="controller-tag good">Cryptographic Math (CIDv1 + W3C did:key)</span>
+              </td>
+              <td class="pro-text">
+                <strong>Content-Addressed &amp; Mirror-Agnostic:</strong> The signed 5-block <code style="font-family: var(--mono);">chain.packablock</code>, Anchore <code style="font-family: var(--mono);">syft</code> SBOM, <code style="font-family: var(--mono);">DSSE</code> statement, and PDF/YAML artifacts hash to a deterministic <code style="font-family: var(--mono);">bafybei...</code> CID. Pin simultaneously to R2, Storacha, GitHub Pages, an EU/State mirror, or a local LAN node—any surviving copy verifies identically.
+              </td>
+              <td class="pro-text">
+                Requires deterministic canonicalization of SBOM timestamps/UUIDs and a lightweight <code style="font-family: var(--mono);">_dnslink</code> TXT pointer (both automated by <code style="font-family: var(--mono);">pkaput squash-release</code> &amp; <code style="font-family: var(--mono);">publish-dns</code>).
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     <!-- Bottom Section: Reproduce Locally or Against This Live Gateway -->
     <section class="panel cli-section">
