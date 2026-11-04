@@ -612,6 +612,54 @@ export function renderLandingPage(origin: string): string {
     tr.our-solution .pro-text {
       color: #d1fae5;
     }
+
+    .dnslink-callout {
+      padding: 1.15rem 1.25rem;
+      background: #0d1310;
+      border-top: 1px solid var(--border);
+    }
+
+    .dnslink-callout-title {
+      font-family: var(--mono);
+      font-size: 0.79rem;
+      font-weight: 600;
+      color: var(--emerald);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.65rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dnslink-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 960px) {
+      .dnslink-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .dnslink-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.85rem 0.95rem;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .dnslink-card strong {
+      color: var(--ink);
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.83rem;
+    }
   </style>
 </head>
 <body>
@@ -928,6 +976,26 @@ export function renderLandingPage(origin: string): string {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="dnslink-callout">
+        <div class="dnslink-callout-title">
+          <span>Architectural Note: Why RFC 4648 Base32 DNSLink Instead of an HTTP <code style="color: var(--ink);">/.well-known/</code> Endpoint?</span>
+        </div>
+        <div class="dnslink-grid">
+          <div class="dnslink-card">
+            <strong>1. Decoupled From Origin Server Uptime</strong>
+            An HTTP <code style="font-family: var(--mono);">/.well-known/sbom</code> endpoint relies on the manufacturer's web server, TLS certificates, and CDN staying online forever. DNS is globally replicated and cached across recursive resolvers (<code style="font-family: var(--mono);">UDP/53</code>, DoH, DoT, and <code style="font-family: var(--mono);">DNSSEC</code>-signed zone files) with zero origin compute required.
+          </div>
+          <div class="dnslink-card">
+            <strong>2. Transparent vs. Concealed Access Control</strong>
+            A <code style="font-family: var(--mono);">/.well-known/</code> route conceals routing, rate-limiting, and mutation controls inside the hosting provider's opaque application layer (where a server can silently alter responses or block IPs). Because each <code style="font-family: var(--mono);">sha256</code> layer digest maps to a unique 52-char subdomain (<code style="font-family: var(--mono);">_dnslink.&lt;base32&gt;</code>), DNS credentials can be strictly scoped to <strong>append-only (<code style="font-family: var(--mono);">CREATE TXT</code> only)</strong>—never overwriting prior releases.
+          </div>
+          <div class="dnslink-card">
+            <strong>3. Sovereign TLD Governance (<code style="font-family: var(--mono);">.eu</code> / <code style="font-family: var(--mono);">.gov</code>) Without Blob Lock-In</strong>
+            Instead of an EU regulator or State government building a monolithic portal to host terabytes of firmware and SBOMs, public agencies can operate an append-only, DNSSEC-signed discovery zone under a sovereign TLD (e.g., <code style="font-family: var(--mono);">_dnslink.&lt;base32&gt;.cra.europa.eu</code> or <code style="font-family: var(--mono);">.wa.gov</code>) while the <code style="font-family: var(--mono);">CARv1</code> bundles remain distributed across IPFS, R2, and local mirrors.
+          </div>
+        </div>
       </div>
     </section>
 

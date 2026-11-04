@@ -33,6 +33,11 @@ By pairing **`pkablk`** with **`pkaput`**:
 | **5. Centralized State-Wide Registry** (State / National Gov Portal) | **State Government IT Agency** | Matches local public-sector procurement rules and state compliance mandates. | 50+ incompatible jurisdictional silos; fragile state IT uptime, appropriations cycles, and contractor turnover. |
 | **6. Continuous Attestation + `pkaput`** (`CARv1` + `IPFS` + `Base32 DNSLink`) | **Cryptographic Math (`CIDv1` + `W3C did:key`)** | **Content-Addressed & Mirror-Agnostic:** The signed 5-block `chain.packablock`, Anchore `syft` SBOM, `DSSE` statement, and PDF/YAML artifacts hash to a deterministic `bafybei...` CID. Pin simultaneously to R2, Storacha, GitHub Pages, an EU/State mirror, or a local LAN node—any surviving copy verifies identically. | Requires deterministic canonicalization of SBOM timestamps/UUIDs and a lightweight `_dnslink` TXT pointer (both automated by `pkaput squash-release` & `publish-dns`). |
 
+#### Why RFC 4648 Base32 `DNSLink` Instead of an HTTP `/.well-known/` Endpoint?
+1. **Decoupled From Origin Server Uptime**: An HTTP `/.well-known/sbom` endpoint relies on the manufacturer's web server, TLS certificates, and CDN staying online forever. DNS is globally replicated and cached across recursive resolvers (`UDP/53`, DoH, DoT, and `DNSSEC`-signed zone files) with zero origin compute required.
+2. **Transparent vs. Concealed Access Control**: A `/.well-known/` route conceals routing, rate-limiting, and mutation controls inside the hosting provider's opaque application layer (where a server can silently alter responses or block IPs). Because each `sha256` layer digest maps to a unique 52-char subdomain (`_dnslink.<base32>`), DNS credentials can be strictly scoped to **append-only (`CREATE TXT` only)**—never overwriting prior releases.
+3. **Sovereign TLD Governance (`.eu` / `.gov`) Without Blob Lock-In**: Instead of an EU regulator or State government building a monolithic portal to host terabytes of firmware and SBOMs, public agencies can operate an append-only, DNSSEC-signed discovery zone under a sovereign TLD (e.g., `_dnslink.<base32>.cra.europa.eu` or `.wa.gov`) while the `CARv1` bundles remain distributed across IPFS, R2, and local mirrors.
+
 ---
 
 ## 1. Separation of Concerns: `pkablk` vs. `pkaput`
