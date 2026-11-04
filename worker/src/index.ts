@@ -93,7 +93,7 @@ export default {
 					{
 						digest,
 						base32Label: label,
-						fqdn: `_dnslink.${label}.layers.packablock.com`,
+						fqdn: `_dnslink.${label}.examples.packablock.com`,
 						txt: `dnslink=/ipfs/${cid}`,
 						cid,
 						gatewayUrl: `${origin}/ipfs/${cid}/`,

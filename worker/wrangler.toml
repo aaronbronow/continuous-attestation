@@ -1,6 +1,12 @@
 name = "continuous-attestation-demo"
 main = "src/index.ts"
 compatibility_date = "2026-10-01"
+workers_dev = true
+preview_urls = true
+
+routes = [
+  { pattern = "examples.packablock.com", custom_domain = true }
+]
 
 [observability]
 enabled = true

@@ -5,9 +5,12 @@ import (
 	"encoding/base32"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
@@ -120,9 +123,10 @@ func UpdateCoreDNSZoneFile(zoneFilePath, digest, domain, ipfsCID string) (string
 	return fqdn, txtValue, nil
 }
 
-// ResolveDNSLinkTXT queries the custom UDP DNS server (e.g. `127.0.0.1:1053`) using raw RFC 1035 wire packets
+// ResolveDNSLinkTXT queries the custom UDP DNS server (e.g. `127.0.0.1:1053` or `1.1.1.1:53`) using raw RFC 1035 wire packets
 // to resolve `_dnslink.<label>.<domain>` TXT records, extracting the `/ipfs/<CID>` target.
-// If the container takes a moment to reload the zone file, it retries briefly and also supports zone fallback verification.
+// For public domains (e.g. `examples.packablock.com`), it also checks public recursive DNS (`1.1.1.1:53` and OS resolver)
+// before falling back to the local zone file.
 func ResolveDNSLinkTXT(dnsServerAddr, fqdn, fallbackZonePath string) (string, string, error) {
 	if dnsServerAddr == "" {
 		dnsServerAddr = "127.0.0.1:1053"
@@ -152,7 +156,45 @@ func ResolveDNSLinkTXT(dnsServerAddr, fqdn, fallbackZonePath string) (string, st
 		time.Sleep(250 * time.Millisecond)
 	}
 
-	// If CoreDNS container is not running or reloading, check local zone file for the exact recordHost
+	// For public domains (e.g. examples.packablock.com), try Cloudflare 1.1.1.1:53 & OS resolver
+	if !strings.HasSuffix(strings.TrimSuffix(fqdn, "."), ".internal") {
+		if txts, err := queryUDPTXT("1.1.1.1:53", fqdn); err == nil {
+			for _, txt := range txts {
+				if strings.HasPrefix(txt, "dnslink=/ipfs/") {
+					cid := strings.Trim(strings.TrimPrefix(txt, "dnslink=/ipfs/"), "/")
+					return cid, txt, nil
+				}
+			}
+		}
+		if txts, err := net.LookupTXT(fqdn); err == nil {
+			for _, txt := range txts {
+				if strings.HasPrefix(txt, "dnslink=/ipfs/") {
+					cid := strings.Trim(strings.TrimPrefix(txt, "dnslink=/ipfs/"), "/")
+					return cid, txt, nil
+				}
+			}
+		}
+		// HTTPS DNSLink bridge fallback on the target domain (e.g. https://examples.packablock.com/api/dnslink?label=...)
+		labels := strings.Split(strings.TrimSuffix(fqdn, "."), ".")
+		if len(labels) >= 3 && labels[0] == "_dnslink" {
+			label := labels[1]
+			domainHost := strings.Join(labels[2:], ".")
+			httpClient := &http.Client{Timeout: 3 * time.Second}
+			if resp, err := httpClient.Get(fmt.Sprintf("https://%s/api/dnslink?label=%s", domainHost, label)); err == nil {
+				body, _ := io.ReadAll(resp.Body)
+				resp.Body.Close()
+				var parsed struct {
+					CID string `json:"cid"`
+					TXT string `json:"txt"`
+				}
+				if json.Unmarshal(body, &parsed) == nil && parsed.CID != "" {
+					return parsed.CID, parsed.TXT, nil
+				}
+			}
+		}
+	}
+
+	// If CoreDNS container is not running or DNS record not yet propagated, check local zone file for the exact recordHost
 	if fallbackZonePath != "" {
 		labels := strings.Split(fqdn, ".")
 		cleanHost := labels[0]

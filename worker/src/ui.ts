@@ -1101,30 +1101,32 @@ export function renderLandingPage(origin: string): string {
           '# 1. Generate & verify the 5-block Sonoff S31 chain (Factory OEM -> UART ESPHome 2026.7.0 -> 3x HA OTA -> 2026.10.3)',
           './bin/pkaput init-esphome-demo',
           '',
-          '# 2. Squash the 5 firmware transitions + attach owners-manual.pdf & sonoff-s31-esphome.yaml into CARv1/IPFS',
+          '# 2. Squash the 4 ESPHome firmware layers, run Anchore Syft, & attach owners-manual.pdf + sonoff-s31-esphome.yaml into CARv1',
           './bin/pkaput squash-release \\\\',
           '  --chain examples/esphome-s31/packablock.yaml \\\\',
-          '  --layers 5 \\\\',
+          '  --layers 4 \\\\',
           '  --output-tag "sonoff-s31-esphome:2026.10.3" \\\\',
           '  --attach "examples/esphome-s31/owners-manual.pdf,examples/esphome-s31/sonoff-s31-esphome.yaml"',
           '',
-          '# 3. Publish RFC 4648 Base32 DNSLink pointer & run Zero-Trust Pre-Flight Gate against this live gateway',
-          './bin/pkaput publish-dns --domain "layers.example.internal" --provider coredns',
+          '# 3. Publish RFC 4648 Base32 DNSLink pointer under examples.packablock.com & run Zero-Trust Pre-Flight Gate',
+          './bin/pkaput publish-dns --domain "examples.packablock.com" --provider cloudflare',
           './bin/pkaput preflight-gate \\\\',
           '  --digest "' + sc.flattenedDigest + '" \\\\',
+          '  --domain "examples.packablock.com" \\\\',
           '  --policy examples/esphome-s31/packablock.policy.yaml \\\\',
           '  --query-pkg "esphome/esphome" --query-version "2026.10.3" \\\\',
           '  --ipfs-gateway "' + ORIGIN + '"'
         ].join('\\n');
       } else {
         pre.textContent = [
-          '# 1. Squash the 2-block Go lockfile chain & publish DNSLink',
+          '# 1. Squash the 2-block Go lockfile chain with Anchore Syft & publish DNSLink under examples.packablock.com',
           './bin/pkaput squash-release --layers 3 --output-tag "secure-lib:v1.0.0" --storage local',
-          './bin/pkaput publish-dns --domain "layers.example.internal" --provider coredns',
+          './bin/pkaput publish-dns --domain "examples.packablock.com" --provider cloudflare',
           '',
           '# 2. Run Zero-Trust Pre-Flight Gate against this live gateway',
           './bin/pkaput preflight-gate \\\\',
           '  --digest "' + sc.flattenedDigest + '" \\\\',
+          '  --domain "examples.packablock.com" \\\\',
           '  --ipfs-gateway "' + ORIGIN + '"'
         ].join('\\n');
       }
