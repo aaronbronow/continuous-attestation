@@ -297,6 +297,9 @@ func BuildSquashAttestation(
 	}
 
 	now := time.Now().UTC().Format(time.RFC3339)
+	if len(blocks) > 0 && blocks[len(blocks)-1].Meta.Timestamp != "" {
+		now = blocks[len(blocks)-1].Meta.Timestamp
+	}
 	vcProofInput := fmt.Sprintf("%s:%s:%s:%s", km.DID, flattenedDigest, terminalMetaHash, now)
 	vcSig := base64.StdEncoding.EncodeToString(ed25519.Sign(km.PrivateKey, []byte(vcProofInput)))
 

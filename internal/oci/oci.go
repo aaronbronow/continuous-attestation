@@ -284,6 +284,7 @@ func buildDeterministicTarGz(files map[string][]byte) ([]byte, string, error) {
 			Size:     int64(len(content)),
 			ModTime:  fixedTime,
 			Typeflag: tar.TypeReg,
+			Format:   tar.FormatUSTAR,
 		}
 		if err := tw.WriteHeader(hdr); err != nil {
 			return nil, "", err
@@ -300,7 +301,7 @@ func buildDeterministicTarGz(files map[string][]byte) ([]byte, string, error) {
 	unpackedDigest := "sha256:" + hex.EncodeToString(unpackedSum[:])
 
 	var gzBuf bytes.Buffer
-	gw, err := gzip.NewWriterLevel(&gzBuf, gzip.BestCompression)
+	gw, err := gzip.NewWriterLevel(&gzBuf, gzip.NoCompression)
 	if err != nil {
 		return nil, "", err
 	}

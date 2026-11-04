@@ -82,21 +82,33 @@ export default {
 		if (request.method === "GET" && path === "/api/dnslink") {
 			const qDigest = url.searchParams.get("digest") || "";
 			const qLabel = url.searchParams.get("label") || "";
-			const isGoScenario = qDigest === SEED_DIGEST || qLabel === SEED_LABEL;
 
-			const digest = isGoScenario ? SEED_DIGEST : qDigest || ESPHOME_DIGEST;
-			const label = isGoScenario ? SEED_LABEL : qLabel || ESPHOME_LABEL;
-			const cid = isGoScenario ? SEED_CID : ESPHOME_CID;
+			let matched = ESPHOME_RELEASE;
+			if (qDigest || qLabel) {
+				const found = Object.values(ALL_RELEASES).find(
+					(r) => r.flattenedDigest === qDigest || r.base32Label === qLabel
+				);
+				if (!found) {
+					return new Response(JSON.stringify({ error: "DNSLink record not found", digest: qDigest, label: qLabel }), {
+						status: 404,
+						headers: {
+							"Content-Type": "application/json; charset=utf-8",
+							"Access-Control-Allow-Origin": "*",
+						},
+					});
+				}
+				matched = found;
+			}
 
 			return new Response(
 				JSON.stringify(
 					{
-						digest,
-						base32Label: label,
-						fqdn: `_dnslink.${label}.examples.packablock.com`,
-						txt: `dnslink=/ipfs/${cid}`,
-						cid,
-						gatewayUrl: `${origin}/ipfs/${cid}/`,
+						digest: matched.flattenedDigest,
+						base32Label: matched.base32Label,
+						fqdn: `_dnslink.${matched.base32Label}.examples.packablock.com`,
+						txt: `dnslink=/ipfs/${matched.rootCid}`,
+						cid: matched.rootCid,
+						gatewayUrl: `${origin}/ipfs/${matched.rootCid}/`,
 					},
 					null,
 					2

@@ -156,7 +156,30 @@ func ResolveDNSLinkTXT(dnsServerAddr, fqdn, fallbackZonePath string) (string, st
 		time.Sleep(250 * time.Millisecond)
 	}
 
-	// For public domains (e.g. examples.packablock.com), try Cloudflare 1.1.1.1:53 & OS resolver
+	// 1. If CoreDNS container is not running locally, check the local zone file first for the exact recordHost
+	if fallbackZonePath != "" {
+		labels := strings.Split(fqdn, ".")
+		cleanHost := labels[0]
+		if len(labels) >= 2 {
+			cleanHost = labels[0] + "." + labels[1]
+		}
+		if raw, err := os.ReadFile(fallbackZonePath); err == nil {
+			for _, line := range strings.Split(string(raw), "\n") {
+				line = strings.TrimSpace(line)
+				if strings.HasPrefix(line, cleanHost+" ") && strings.Contains(line, "dnslink=/ipfs/") {
+					parts := strings.Split(line, `"`)
+					for _, p := range parts {
+						if strings.HasPrefix(p, "dnslink=/ipfs/") {
+							cid := strings.TrimPrefix(p, "dnslink=/ipfs/")
+							return strings.Trim(cid, "/"), p, nil
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// 2. For public domains (e.g. examples.packablock.com), try Cloudflare 1.1.1.1:53, OS resolver, and HTTPS bridge
 	if !strings.HasSuffix(strings.TrimSuffix(fqdn, "."), ".internal") {
 		if txts, err := queryUDPTXT("1.1.1.1:53", fqdn); err == nil {
 			for _, txt := range txts {
@@ -183,34 +206,13 @@ func ResolveDNSLinkTXT(dnsServerAddr, fqdn, fallbackZonePath string) (string, st
 			if resp, err := httpClient.Get(fmt.Sprintf("https://%s/api/dnslink?label=%s", domainHost, label)); err == nil {
 				body, _ := io.ReadAll(resp.Body)
 				resp.Body.Close()
-				var parsed struct {
-					CID string `json:"cid"`
-					TXT string `json:"txt"`
-				}
-				if json.Unmarshal(body, &parsed) == nil && parsed.CID != "" {
-					return parsed.CID, parsed.TXT, nil
-				}
-			}
-		}
-	}
-
-	// If CoreDNS container is not running or DNS record not yet propagated, check local zone file for the exact recordHost
-	if fallbackZonePath != "" {
-		labels := strings.Split(fqdn, ".")
-		cleanHost := labels[0]
-		if len(labels) >= 2 {
-			cleanHost = labels[0] + "." + labels[1]
-		}
-		if raw, err := os.ReadFile(fallbackZonePath); err == nil {
-			for _, line := range strings.Split(string(raw), "\n") {
-				line = strings.TrimSpace(line)
-				if strings.HasPrefix(line, cleanHost+" ") && strings.Contains(line, "dnslink=/ipfs/") {
-					parts := strings.Split(line, `"`)
-					for _, p := range parts {
-						if strings.HasPrefix(p, "dnslink=/ipfs/") {
-							cid := strings.TrimPrefix(p, "dnslink=/ipfs/")
-							return strings.Trim(cid, "/"), p, nil
-						}
+				if resp.StatusCode == http.StatusOK {
+					var parsed struct {
+						CID string `json:"cid"`
+						TXT string `json:"txt"`
+					}
+					if json.Unmarshal(body, &parsed) == nil && parsed.CID != "" {
+						return parsed.CID, parsed.TXT, nil
 					}
 				}
 			}
